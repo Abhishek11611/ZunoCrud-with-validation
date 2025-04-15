@@ -1,11 +1,11 @@
 package com.example.demo.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.requestdto.PdRequestDto;
+import com.example.demo.response.ResponseHandler;
 import com.example.demo.service.PersonalDetailsService;
 
 @RestController
@@ -26,29 +28,87 @@ public class PersonalDetailsController {
 	private PersonalDetailsService personalDetailsService;
 	
 	@PostMapping("/add-person")
-	public ResponseEntity<PersonalDetailsEntity>addperson(@RequestBody PersonalDetailsEntity personalDetailsEntity){
-		PersonalDetailsEntity per=personalDetailsService.addPerson(personalDetailsEntity);
-		return new ResponseEntity<PersonalDetailsEntity>(per,HttpStatus.CREATED);
+	public ResponseHandler addperson(@RequestBody PdRequestDto pdRequestDto){
+		
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			String data= personalDetailsService.addPerson(pdRequestDto);
+			response.setData(data);
+			response.setStatus(true);
+			response.setMessage("Success");
+			
+		} catch (Exception e) {
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage("failed");
+		}
+			
+		return response;
 	}
+	
 	
 	@GetMapping("/getall-person")
-	public ResponseEntity<List<PersonalDetailsEntity>>getAllPersonDetails(){
-	List<PersonalDetailsEntity> per =	personalDetailsService.getAllPersonDetails();
-		return new ResponseEntity<List<PersonalDetailsEntity>>(per,HttpStatus.ACCEPTED);
+	public ResponseHandler getAllPersonDetails(){
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			List<PdRequestDto> data =	personalDetailsService.getAllPersonDetails();
+			response.setData(data);
+			response.setStatus(true);
+			response.setMessage("Success");
+			
+		} catch (Exception e) {
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage("failed");
+			
+		}
+		
+	
+		return response;
 	}
 	
-//	@DeleteMapping("/delete-person/{personId}")
+
 	
 	@PatchMapping("/delete-person/{personId}")
-	public ResponseEntity<String>deletePersonDetails(@PathVariable Integer personId){
-		String perondelete = personalDetailsService.deletePersonDetails(personId);
-		return new ResponseEntity<String>(perondelete,HttpStatus.ACCEPTED);
+	public ResponseHandler deletePersonDetails(@PathVariable Integer personId){
+		
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			String data = personalDetailsService.deletePersonDetails(personId);
+			response.setData(data);
+			response.setStatus(true);
+			response.setMessage("Success");
+			
+		} catch (Exception e) {
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage("failed");		
+		}	
+		
+		
+		
+		return response;
 	}
    
 	@PutMapping("/update-person/{personId}")
-	public ResponseEntity<String>updatepersonById(@PathVariable Integer personId,@RequestBody PersonalDetailsEntity detailsEntity){
-		String personupdate = personalDetailsService.updatepersonById(personId, detailsEntity);
-		return new ResponseEntity<String>(personupdate,HttpStatus.ACCEPTED);
+	public ResponseHandler updatepersonById(@PathVariable Integer personId,@RequestBody PdRequestDto pdRequestDto){
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			String data = personalDetailsService.updatepersonById(personId, pdRequestDto);
+			response.setData(data);
+			response.setStatus(true);
+			response.setMessage("Success");
+			
+		} catch (Exception e) {
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage("failed");		
+		}		
+		return response;
 		
 	}
 }

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.repository.PersonalDetailsRepository;
+import com.example.demo.requestdto.PdRequestDto;
 
 @Service
 public class PersonalDetailsServiceImpl implements PersonalDetailsService {
@@ -16,23 +18,58 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	private PersonalDetailsRepository personalDetailsRepository;
 
 	@Override
-	public PersonalDetailsEntity addPerson(PersonalDetailsEntity personalDetailsEntity) {
-	PersonalDetailsEntity per	=personalDetailsRepository.save(personalDetailsEntity);
-		return per;
+	public String addPerson(PdRequestDto pdRequestDto) {
+		PersonalDetailsEntity pdobj = new PersonalDetailsEntity();
+		pdobj.setPersonTilte(pdRequestDto.getPersonTilte());
+	    pdobj.setPersonFullName(pdRequestDto.getPersonFullName());
+	    pdobj.setPersonGender(pdRequestDto.getPersonGender());
+	    pdobj.setPersonDateOfBirth(pdRequestDto.getPersonDateOfBirth());
+	    pdobj.setPersonPanNumber(pdRequestDto.getPersonPanNumber());
+	    pdobj.setPersonAadhaarNumber(pdRequestDto.getPersonAadhaarNumber());
+	    pdobj.setPersonMaritalStatus(pdRequestDto.getPersonMaritalStatus());
+	    pdobj.setPersonEmail(pdRequestDto.getPersonEmail());
+	    pdobj.setPersonMobileNo(pdRequestDto.getPersonMobileNo());
+	    pdobj.setPersonAlternateMobileNo(pdRequestDto.getPersonAlternateMobileNo());
+	    pdobj.setPersonAddress1(pdRequestDto.getPersonAddress1());
+	    pdobj.setPersonAddress2 (pdRequestDto.getPersonAddress2());
+	    pdobj.setPersonAddress3(pdRequestDto.getPersonAddress3());
+	    pdobj.setPersonPincode(pdRequestDto.getPersonPincode());
+	    pdobj.setPersonCity(pdRequestDto.getPersonCity());
+	    pdobj.setPersonState(pdRequestDto.getPersonState());
+	    
+	    personalDetailsRepository.save(pdobj);
+		return "Added Successfully";
 	}
 
 	@Override
-	public List<PersonalDetailsEntity> getAllPersonDetails() {
+	public List<PdRequestDto> getAllPersonDetails() {
 		List<PersonalDetailsEntity> perlist= personalDetailsRepository.findByStatus("Yes");
-		return perlist;
+		List <PdRequestDto> dtobj= new ArrayList<>();
 		
+		
+		for (PersonalDetailsEntity personalDetailsEntity : perlist) {
+			
+			PdRequestDto dtoobj = new PdRequestDto();
+			
+			dtoobj.setPersonTilte(personalDetailsEntity.getPersonTilte());
+			dtoobj.setPersonFullName(personalDetailsEntity.getPersonFullName());
+			dtoobj.setPersonGender(personalDetailsEntity.getPersonGender());
+			dtoobj.setPersonDateOfBirth(personalDetailsEntity.getPersonDateOfBirth());
+			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
+			dtoobj.setPersonAadhaarNumber(personalDetailsEntity.getPersonAadhaarNumber());
+            
+			dtobj.add(dtoobj);
+		}
+		
+		return dtobj;
+		 
 //		return  personalDetailsRepository.findAll();
 	
 	}
 
 	@Override
 	public String deletePersonDetails(Integer personId) {
-//		personalDetailsRepository.deleteById(personId);
+
 		
 		Optional<PersonalDetailsEntity> per= personalDetailsRepository.findById(personId);
 		
@@ -49,29 +86,30 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	}
 
 	@Override
-	public String updatepersonById(Integer personId, PersonalDetailsEntity personalDetailsEntity) {
-		Optional<PersonalDetailsEntity> per= personalDetailsRepository.findById(personId);
+	public String updatepersonById(Integer personId, PdRequestDto pdRequestDto) {
+		
+		Optional<PersonalDetailsEntity> per =personalDetailsRepository.findByPersonIdAndStatus(personId,"Yes");
 		
 		if(per.isPresent()) {
 			
 			PersonalDetailsEntity personget=per.get();
 			
-			personget.setPersonTilte(personalDetailsEntity.getPersonTilte());
-			personget.setPersonFullName(personalDetailsEntity.getPersonFullName());
-			personget.setPersonGender(personalDetailsEntity.getPersonGender());
-			personget.setPersonDateOfBirth(personalDetailsEntity.getPersonDateOfBirth());
-			personget.setPersonPanNumber(personalDetailsEntity.getPersonPanNumber());
-			personget.setPersonAadhaarNumber(personalDetailsEntity.getPersonAadhaarNumber());
-			personget.setPersonMaritalStatus(personalDetailsEntity.getPersonMaritalStatus());
-			personget.setPersonEmail(personalDetailsEntity.getPersonEmail());
-			personget.setPersonMobileNo(personalDetailsEntity.getPersonMobileNo());
-			personget.setPersonAlternateMobileNo(personalDetailsEntity.getPersonAlternateMobileNo());
-			personget.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
-			personget.setPersonAddress2(personalDetailsEntity.getPersonAddress2());
-			personget.setPersonAddress3(personalDetailsEntity.getPersonAddress3());
-			personget.setPersonPincode(personalDetailsEntity.getPersonPincode());
-			personget.setPersonCity(personalDetailsEntity.getPersonCity());
-			personget.setPersonState(personalDetailsEntity.getPersonState());
+			personget.setPersonTilte(pdRequestDto.getPersonTilte());
+			personget.setPersonFullName(pdRequestDto.getPersonFullName());
+			personget.setPersonGender(pdRequestDto.getPersonGender());
+			personget.setPersonDateOfBirth(pdRequestDto.getPersonDateOfBirth());
+			personget.setPersonPanNumber(pdRequestDto.getPersonPanNumber());
+			personget.setPersonAadhaarNumber(pdRequestDto.getPersonAadhaarNumber());
+			personget.setPersonMaritalStatus(pdRequestDto.getPersonMaritalStatus());
+			personget.setPersonEmail(pdRequestDto.getPersonEmail());
+			personget.setPersonMobileNo(pdRequestDto.getPersonMobileNo());
+			personget.setPersonAlternateMobileNo(pdRequestDto.getPersonAlternateMobileNo());
+			personget.setPersonAddress1(pdRequestDto.getPersonAddress1());
+			personget.setPersonAddress2(pdRequestDto.getPersonAddress2());
+			personget.setPersonAddress3(pdRequestDto.getPersonAddress3());
+			personget.setPersonPincode(pdRequestDto.getPersonPincode());
+			personget.setPersonCity(pdRequestDto.getPersonCity()); 
+			personget.setPersonState(pdRequestDto.getPersonState());
 			
 			personalDetailsRepository.save(personget);
 			
@@ -80,6 +118,13 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			return "Person Details not updated";
 		}
 		
+	}
+
+	
+	@Override
+	public String findbyidPersonDetails(Integer personId) {
+		
+		return null;
 	}
 
 }
