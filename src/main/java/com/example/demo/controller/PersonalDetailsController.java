@@ -28,25 +28,27 @@ public class PersonalDetailsController {
 	private PersonalDetailsService personalDetailsService;
 	
 	@PostMapping("/add-person")
-	public ResponseHandler addperson(@RequestBody PdRequestDto pdRequestDto){
-		
-		ResponseHandler response = new ResponseHandler();
-		
-		try {
-			String data= personalDetailsService.addPerson(pdRequestDto);
-			response.setData(data);
-			response.setStatus(true);
-			response.setMessage("Success");
-			
-		} catch (Exception e) {
-			response.setData(new ArrayList<>());
-			response.setStatus(false);
-			response.setMessage("failed");
-		}
-			
-		return response;
+	public ResponseHandler addperson(@RequestBody PdRequestDto pdRequestDto) {
+
+	    ResponseHandler response = new ResponseHandler();
+
+	    try {
+	        String result = personalDetailsService.addPerson(pdRequestDto);
+
+	        response.setData(result);
+            response.setStatus(true);
+            response.setMessage("Success");
+
+	    } catch (Exception e) {
+	        response.setData(new ArrayList<>());
+	        response.setStatus(false);
+	        response.setMessage(e.getMessage());
+	    }
+
+	    return response;
 	}
-	
+
+	   
 	
 	@GetMapping("/getall-person")
 	public ResponseHandler getAllPersonDetails(){
@@ -68,8 +70,6 @@ public class PersonalDetailsController {
 	
 		return response;
 	}
-	
-
 	
 	@PatchMapping("/delete-person/{personId}")
 	public ResponseHandler deletePersonDetails(@PathVariable Integer personId){

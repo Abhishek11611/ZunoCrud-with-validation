@@ -1,6 +1,11 @@
 package com.example.demo.entity;
 
+
+import java.time.LocalDate;
 import java.util.Date;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import com.example.demo.enums.Gender;
 import com.example.demo.enums.MaritalStatus;
@@ -18,39 +23,79 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "personal-details-table")
 public class PersonalDetailsEntity {
-	
+
 // Personal Details
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer personId;
-	@Enumerated(EnumType.STRING )
+	@Column(name = "person_id")
+	private Integer personId;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "person_title")
 	private Title PersonTilte;
+	
+	@Column(name = "person_fullname")
 	private String personFullName;
+	
 	@Enumerated(EnumType.STRING)
+	@Column(name = "person_gender")
 	private Gender personGender;
+	
+	@Column(name = "person_dateofbirth")
 	private Date personDateOfBirth;
+	
+    @Column(name = "person_pan_number")
 	private String personPanNumber;
+	
+    @Column(name = "person_aadhar_number")
 	private Long personAadhaarNumber;
+	
 	@Enumerated(EnumType.STRING)
-	private MaritalStatus personMaritalStatus; 
-	
+	@Column(name = "person_maritalstatus")
+	private MaritalStatus personMaritalStatus;
+
 //Contact Details
-	@Column(unique = true)
+	@Column(name = "person_email")
 	private String personEmail;
+	
+	@Column(name = "person_mobile_no")
 	private Long personMobileNo;
+	
+	@Column(name = "person_alternate_mobile_no")
 	private Long personAlternateMobileNo;
-	
+
 //Address
+	@Column(name = "person_address1")
 	private String personAddress1;
+	
+	@Column(name = "person_address2")
 	private String personAddress2;
+	
+	@Column(name = "person_address3")
 	private String personAddress3;
-	private Long  personPincode;
+	
+	@Column(name = "person_pincode")
+	private Long personPincode;
+	
+	@Column(name = "person_city")
 	private String personCity;
+	
+	@Column(name = "person_date")
 	private String personState;
-	
+
 // Status
-	private String status ="Yes";
-	
+	@Column(name = "status")
+	private String status = "Yes";
+
+//Date
+	@CreationTimestamp
+	@Column(name = "created_date")
+	private LocalDate createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_date")
+	private LocalDate updatedAt;
+
 	public PersonalDetailsEntity() {
 		// TODO Auto-generated constructor stub
 	}

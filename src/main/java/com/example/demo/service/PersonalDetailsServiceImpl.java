@@ -19,8 +19,85 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	@Override
 	public String addPerson(PdRequestDto pdRequestDto) {
-		PersonalDetailsEntity pdobj = new PersonalDetailsEntity();
-		pdobj.setPersonTilte(pdRequestDto.getPersonTilte());
+
+	    PersonalDetailsEntity pdobj = new PersonalDetailsEntity();
+	    List<String> errors = new ArrayList<>();
+
+	    if (pdRequestDto.getPersonTilte() == null || pdRequestDto.getPersonTilte().toString().isEmpty()) {
+	        errors.add("Title is missing");
+	    }
+
+	    if (pdRequestDto.getPersonFullName() == null || pdRequestDto.getPersonFullName().isEmpty()) {
+	        errors.add("Full Name is missing");
+	    }
+
+	    if (pdRequestDto.getPersonGender() == null || pdRequestDto.getPersonGender().toString().isEmpty()) {
+	        errors.add("Gender is missing");
+	    }
+
+	    if (pdRequestDto.getPersonDateOfBirth() == null || pdRequestDto.getPersonDateOfBirth().toString().isEmpty()) {
+	        errors.add("Date of Birth is missing");
+	    }
+
+	    if (pdRequestDto.getPersonPanNumber() == null || pdRequestDto.getPersonPanNumber().isEmpty()) {
+	        errors.add("PAN Number is missing");
+	    } else if (pdRequestDto.getPersonPanNumber().length() != 10 || 
+	               !pdRequestDto.getPersonPanNumber().matches("[A-Z]{5}[0-9]{4}[A-Z]{1}")) {
+	        errors.add("Please enter a valid PAN Number");
+	    }
+
+	    if (pdRequestDto.getPersonAadhaarNumber() == null || pdRequestDto.getPersonAadhaarNumber().toString().isEmpty()) {
+	        errors.add("Aadhaar Number is missing");
+	    } else if (pdRequestDto.getPersonAadhaarNumber().toString().length() != 12) {
+	        errors.add("Please enter a 12-digit Aadhaar Number");
+	    }
+
+	    if (pdRequestDto.getPersonMaritalStatus() == null) {
+	        errors.add("Marital Status is missing");
+	    }
+
+	    if (pdRequestDto.getPersonEmail() == null) {
+	        errors.add("Email is missing");
+	    }
+
+	    if (pdRequestDto.getPersonMobileNo() == null) {
+	        errors.add("Mobile Number is missing");
+	    }
+
+	    if (pdRequestDto.getPersonAlternateMobileNo() == null) {
+	        errors.add("Alternative Mobile Number is missing");
+	    }
+
+	    if (pdRequestDto.getPersonAddress1() == null) {
+	        errors.add("Address1 is missing");
+	    }
+
+	    if (pdRequestDto.getPersonAddress2() == null) {
+	        errors.add("Address2 is missing");
+	    }
+
+	    if (pdRequestDto.getPersonAddress3() == null) {
+	        errors.add("Address3 is missing");
+	    }
+
+	    if (pdRequestDto.getPersonPincode() == null) {
+	        errors.add("Pincode is missing");
+	    }
+
+	    if (pdRequestDto.getPersonCity() == null) {
+	        errors.add("City is missing");
+	    }
+
+	    if (pdRequestDto.getPersonState() == null) {
+	        errors.add("State is missing");
+	    }
+
+	    
+	    if (!errors.isEmpty()) {
+	        throw new IllegalArgumentException(String.join(", ", errors));
+	    }
+
+	    pdobj.setPersonTilte(pdRequestDto.getPersonTilte());
 	    pdobj.setPersonFullName(pdRequestDto.getPersonFullName());
 	    pdobj.setPersonGender(pdRequestDto.getPersonGender());
 	    pdobj.setPersonDateOfBirth(pdRequestDto.getPersonDateOfBirth());
@@ -31,15 +108,16 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	    pdobj.setPersonMobileNo(pdRequestDto.getPersonMobileNo());
 	    pdobj.setPersonAlternateMobileNo(pdRequestDto.getPersonAlternateMobileNo());
 	    pdobj.setPersonAddress1(pdRequestDto.getPersonAddress1());
-	    pdobj.setPersonAddress2 (pdRequestDto.getPersonAddress2());
+	    pdobj.setPersonAddress2(pdRequestDto.getPersonAddress2());
 	    pdobj.setPersonAddress3(pdRequestDto.getPersonAddress3());
 	    pdobj.setPersonPincode(pdRequestDto.getPersonPincode());
 	    pdobj.setPersonCity(pdRequestDto.getPersonCity());
 	    pdobj.setPersonState(pdRequestDto.getPersonState());
-	    
+
 	    personalDetailsRepository.save(pdobj);
-		return "Added Successfully";
+	    return "Added Successfully";
 	}
+
 
 	@Override
 	public List<PdRequestDto> getAllPersonDetails() {
@@ -62,8 +140,6 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 		}
 		
 		return dtobj;
-		 
-//		return  personalDetailsRepository.findAll();
 	
 	}
 
@@ -123,7 +199,12 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	
 	@Override
 	public String findbyidPersonDetails(Integer personId) {
+		Optional<PersonalDetailsEntity> per = personalDetailsRepository.findById(personId);
 		
+		if (per.isPresent()) {
+			
+			
+		}
 		return null;
 	}
 
