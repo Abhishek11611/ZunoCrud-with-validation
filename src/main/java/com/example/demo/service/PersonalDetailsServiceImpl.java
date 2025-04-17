@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.repository.PersonalDetailsRepository;
 import com.example.demo.requestdto.PdRequestDto;
+import com.example.demo.requestdto.PdRequiredDto;
 
 @Service
 public class PersonalDetailsServiceImpl implements PersonalDetailsService {
@@ -27,8 +28,12 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	        errors.add("Title is missing");
 	    }
 
-	    if (pdRequestDto.getPersonFullName() == null || pdRequestDto.getPersonFullName().isEmpty()) {
-	        errors.add("Full Name is missing");
+//	    if (pdRequestDto.getPersonFullName() == null || pdRequestDto.getPersonFullName().isEmpty()) {
+//	        errors.add("Full Name is missing");
+//	    }
+	    
+	    if(pdRequestDto.getPersonFirstName() == null || pdRequestDto.getPersonFirstName().isEmpty()) {
+	    	errors.add("FirstName is missing");
 	    }
 
 	    if (pdRequestDto.getPersonGender() == null || pdRequestDto.getPersonGender().toString().isEmpty()) {
@@ -41,15 +46,18 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	    if (pdRequestDto.getPersonPanNumber() == null || pdRequestDto.getPersonPanNumber().isEmpty()) {
 	        errors.add("PAN Number is missing");
-	    } else if (pdRequestDto.getPersonPanNumber().length() != 10 || 
-	               !pdRequestDto.getPersonPanNumber().matches("[A-Z]{5}[0-9]{4}[A-Z]{1}")) {
+	    } else if (pdRequestDto.getPersonPanNumber().length() != 10 || !pdRequestDto.getPersonPanNumber().matches("[A-Z]{5}[0-9]{4}[A-Z]{1}")) {
 	        errors.add("Please enter a valid PAN Number");
+	    } else if(personalDetailsRepository.existsByPersonPanNumber(pdRequestDto.getPersonPanNumber())) {
+	    	errors.add("Pancard Already Existing");
 	    }
 
 	    if (pdRequestDto.getPersonAadhaarNumber() == null || pdRequestDto.getPersonAadhaarNumber().toString().isEmpty()) {
 	        errors.add("Aadhaar Number is missing");
 	    } else if (pdRequestDto.getPersonAadhaarNumber().toString().length() != 12) {
 	        errors.add("Please enter a 12-digit Aadhaar Number");
+	    } else if (personalDetailsRepository.existsByPersonAadhaarNumber(pdRequestDto.getPersonAadhaarNumber())) {
+	    	errors.add("Aadhar Already Existing");
 	    }
 
 	    if (pdRequestDto.getPersonMaritalStatus() == null) {
@@ -58,10 +66,15 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	    if (pdRequestDto.getPersonEmail() == null) {
 	        errors.add("Email is missing");
+	    }else if(personalDetailsRepository.existsByPersonEmail(pdRequestDto.getPersonEmail())) {
+	    	errors.add("Email Already Existing");	    	
+	    	
 	    }
 
 	    if (pdRequestDto.getPersonMobileNo() == null) {
 	        errors.add("Mobile Number is missing");
+	    } else if (personalDetailsRepository.existsByPersonMobileNo(pdRequestDto.getPersonMobileNo())) {
+	    	errors.add("Mobile Number Already Existing");
 	    }
 
 	    if (pdRequestDto.getPersonAlternateMobileNo() == null) {
@@ -98,7 +111,10 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	    }
 
 	    pdobj.setPersonTilte(pdRequestDto.getPersonTilte());
-	    pdobj.setPersonFullName(pdRequestDto.getPersonFullName());
+//	    pdobj.setPersonFullName(pdRequestDto.getPersonFullName());
+	    pdobj.setPersonFirstName(pdRequestDto.getPersonFirstName());
+	    pdobj.setPersonMiddleName(pdRequestDto.getPersonMiddleName());
+	    pdobj.setPersonLastName(pdRequestDto.getPersonLastName());
 	    pdobj.setPersonGender(pdRequestDto.getPersonGender());
 	    pdobj.setPersonDateOfBirth(pdRequestDto.getPersonDateOfBirth());
 	    pdobj.setPersonPanNumber(pdRequestDto.getPersonPanNumber());
@@ -120,21 +136,42 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 
 	@Override
-	public List<PdRequestDto> getAllPersonDetails() {
+	public List<PdRequiredDto> getAllPersonDetails() {
 		List<PersonalDetailsEntity> perlist= personalDetailsRepository.findByStatus("Yes");
-		List <PdRequestDto> dtobj= new ArrayList<>();
+		List <PdRequiredDto> dtobj= new ArrayList<>();
 		
 		
 		for (PersonalDetailsEntity personalDetailsEntity : perlist) {
 			
-			PdRequestDto dtoobj = new PdRequestDto();
+			PdRequiredDto dtoobj = new PdRequiredDto();
 			
 			dtoobj.setPersonTilte(personalDetailsEntity.getPersonTilte());
-			dtoobj.setPersonFullName(personalDetailsEntity.getPersonFullName());
 			dtoobj.setPersonGender(personalDetailsEntity.getPersonGender());
 			dtoobj.setPersonDateOfBirth(personalDetailsEntity.getPersonDateOfBirth());
 			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
 			dtoobj.setPersonAadhaarNumber(personalDetailsEntity.getPersonAadhaarNumber());
+			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
+			dtoobj.setPersonAddress2(personalDetailsEntity.getPersonAddress2());
+			dtoobj.setPersonAddress3(personalDetailsEntity.getPersonAddress3());
+			dtoobj.setPersonMobileNo(personalDetailsEntity.getPersonMobileNo());
+			dtoobj.setPersonAlternateMobileNo(personalDetailsEntity.getPersonAlternateMobileNo());
+			dtoobj.setPersonPincode(personalDetailsEntity.getPersonPincode());
+			dtoobj.setPersonCity(personalDetailsEntity.getPersonCity());
+			dtoobj.setPersonState(personalDetailsEntity.getPersonState());
+			dtoobj.setStatus(personalDetailsEntity.getStatus());
+			
+//			dtoobj.setPersonFullName(personalDetailsEntity.getPersonFullName());
+			
+			StringBuilder builder = new StringBuilder();
+			
+			builder.append(personalDetailsEntity.getPersonFirstName()+" ");
+			
+			if(personalDetailsEntity.getPersonMiddleName()!=null) {
+				builder.append(personalDetailsEntity.getPersonMiddleName());
+			}
+			builder.append(" "+personalDetailsEntity.getPersonLastName());
+			
+			dtoobj.setPersonFullName(builder.toString());
             
 			dtobj.add(dtoobj);
 		}
@@ -171,7 +208,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			PersonalDetailsEntity personget=per.get();
 			
 			personget.setPersonTilte(pdRequestDto.getPersonTilte());
-			personget.setPersonFullName(pdRequestDto.getPersonFullName());
+//			personget.setPersonFullName(pdRequestDto.getPersonFullName());
 			personget.setPersonGender(pdRequestDto.getPersonGender());
 			personget.setPersonDateOfBirth(pdRequestDto.getPersonDateOfBirth());
 			personget.setPersonPanNumber(pdRequestDto.getPersonPanNumber());

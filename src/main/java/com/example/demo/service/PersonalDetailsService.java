@@ -4,12 +4,13 @@ import java.util.List;
 
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.requestdto.PdRequestDto;
+import com.example.demo.requestdto.PdRequiredDto;
 
 public interface PersonalDetailsService {
 	
 	public String addPerson(PdRequestDto pdRequestDto);
 	
-	public List<PdRequestDto> getAllPersonDetails();
+	public List<PdRequiredDto> getAllPersonDetails();
 	
 	public String deletePersonDetails(Integer personId);
 	

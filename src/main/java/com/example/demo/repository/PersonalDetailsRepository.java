@@ -17,5 +17,15 @@ public interface PersonalDetailsRepository extends JpaRepository<PersonalDetails
 	    List<PersonalDetailsEntity> findByStatus(@Param("status") String status);
 	 
 	  public Optional<PersonalDetailsEntity> findByPersonIdAndStatus(Integer personId, String status);
+	  
+	   public  boolean existsByPersonMobileNo(Long personMobileNo);
+	   
+	   public boolean existsByPersonEmail(String personEmail );
+	   
+	   public boolean existsByPersonAadhaarNumber(Long personAadhaarNumber);
+	   
+	   public boolean existsByPersonPanNumber(String personPanNumber);  
+	    
+	   
 	
 }

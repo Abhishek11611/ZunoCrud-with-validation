@@ -34,8 +34,15 @@ public class PersonalDetailsEntity {
 	@Column(name = "person_title")
 	private Title PersonTilte;
 	
-	@Column(name = "person_fullname")
-	private String personFullName;
+	
+	@Column(name = "person_firstname")
+	private String personFirstName;
+	
+	@Column(name = "person_middlename")
+	private String personMiddleName;
+	
+	@Column(name = "person_lastname")
+	private String personLastName;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "person_gender")
@@ -100,15 +107,18 @@ public class PersonalDetailsEntity {
 		// TODO Auto-generated constructor stub
 	}
 
-	public PersonalDetailsEntity(Integer personId, Title personTilte, String personFullName, Gender personGender,
-			Date personDateOfBirth, String personPanNumber, Long personAadhaarNumber, MaritalStatus personMaritalStatus,
-			String personEmail, Long personMobileNo, Long personAlternateMobileNo, String personAddress1,
-			String personAddress2, String personAddress3, Long personPincode, String personCity, String personState,
-			String status) {
+	public PersonalDetailsEntity(Integer personId, Title personTilte, String personFirstName, String personMiddleName,
+			String personLastName, Gender personGender, Date personDateOfBirth, String personPanNumber,
+			Long personAadhaarNumber, MaritalStatus personMaritalStatus, String personEmail, Long personMobileNo,
+			Long personAlternateMobileNo, String personAddress1, String personAddress2, String personAddress3,
+			Long personPincode, String personCity, String personState, String status, LocalDate createdAt,
+			LocalDate updatedAt) {
 		super();
 		this.personId = personId;
 		PersonTilte = personTilte;
-		this.personFullName = personFullName;
+		this.personFirstName = personFirstName;
+		this.personMiddleName = personMiddleName;
+		this.personLastName = personLastName;
 		this.personGender = personGender;
 		this.personDateOfBirth = personDateOfBirth;
 		this.personPanNumber = personPanNumber;
@@ -124,6 +134,8 @@ public class PersonalDetailsEntity {
 		this.personCity = personCity;
 		this.personState = personState;
 		this.status = status;
+		this.createdAt = createdAt;
+		this.updatedAt = updatedAt;
 	}
 
 	public Integer getPersonId() {
@@ -141,13 +153,30 @@ public class PersonalDetailsEntity {
 	public void setPersonTilte(Title personTilte) {
 		PersonTilte = personTilte;
 	}
+	
 
-	public String getPersonFullName() {
-		return personFullName;
+	public String getPersonFirstName() {
+		return personFirstName;
 	}
 
-	public void setPersonFullName(String personFullName) {
-		this.personFullName = personFullName;
+	public void setPersonFirstName(String personFirstName) {
+		this.personFirstName = personFirstName;
+	}
+
+	public String getPersonMiddleName() {
+		return personMiddleName;
+	}
+
+	public void setPersonMiddleName(String personMiddleName) {
+		this.personMiddleName = personMiddleName;
+	}
+
+	public String getPersonLastName() {
+		return personLastName;
+	}
+
+	public void setPersonLastName(String personLastName) {
+		this.personLastName = personLastName;
 	}
 
 	public Gender getPersonGender() {
@@ -269,5 +298,25 @@ public class PersonalDetailsEntity {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	
+
+	
 
 }

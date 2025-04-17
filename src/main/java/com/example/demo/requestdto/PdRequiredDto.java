@@ -6,16 +6,10 @@ import com.example.demo.enums.Gender;
 import com.example.demo.enums.MaritalStatus;
 import com.example.demo.enums.Title;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
-public class PdRequestDto {
+public class PdRequiredDto {
 	
 	private Title PersonTilte;
-	private String personFirstName;	
-	private String personMiddleName;
-	private String personLastName;
+	private String personFullName;	
 	private Gender personGender;
 	private Date personDateOfBirth;
 	private String personPanNumber;
@@ -45,34 +39,17 @@ public class PdRequestDto {
 	public void setPersonTilte(Title personTilte) {
 		PersonTilte = personTilte;
 	}
-	
+
+	public String getPersonFullName() {
+		return personFullName;
+	}
+
+	public void setPersonFullName(String personFullName) {
+		this.personFullName = personFullName;
+	}
 
 	public Gender getPersonGender() {
 		return personGender;
-	}
-
-	public String getPersonFirstName() {
-		return personFirstName;
-	}
-
-	public void setPersonFirstName(String personFirstName) {
-		this.personFirstName = personFirstName;
-	}
-
-	public String getPersonMiddleName() {
-		return personMiddleName;
-	}
-
-	public void setPersonMiddleName(String personMiddleName) {
-		this.personMiddleName = personMiddleName;
-	}
-
-	public String getPersonLastName() {
-		return personLastName;
-	}
-
-	public void setPersonLastName(String personLastName) {
-		this.personLastName = personLastName;
 	}
 
 	public void setPersonGender(Gender personGender) {
@@ -192,5 +169,6 @@ public class PdRequestDto {
 	}
 	
 	
+
 
 }

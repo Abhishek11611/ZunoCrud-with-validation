@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.requestdto.PdRequestDto;
+import com.example.demo.requestdto.PdRequiredDto;
 import com.example.demo.response.ResponseHandler;
 import com.example.demo.service.PersonalDetailsService;
 
@@ -43,6 +44,7 @@ public class PersonalDetailsController {
 	        response.setData(new ArrayList<>());
 	        response.setStatus(false);
 	        response.setMessage(e.getMessage());
+	       
 	    }
 
 	    return response;
@@ -55,7 +57,7 @@ public class PersonalDetailsController {
 		ResponseHandler response = new ResponseHandler();
 		
 		try {
-			List<PdRequestDto> data =	personalDetailsService.getAllPersonDetails();
+			List<PdRequiredDto> data =	personalDetailsService.getAllPersonDetails();
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
