@@ -223,11 +223,20 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			PersonalDetailsEntity personget=per.get();
 			
 			personget.setStatus("No");
-			personalDetailsRepository.save(personget);
+		       PersonalDetailsEntity existingProposer  =	personalDetailsRepository.save(personget);
+		       
+		       Optional<List<NominieeDetailsEntity>> optional = nomineeDetailsRepository.findAllByPersonId(existingProposer.getPersonId());
+		       List<NominieeDetailsEntity> existingNomineeDetailsEntities = optional.get();
+		       
+		       for(int i=0;i<existingNomineeDetailsEntities.size();i++) {
+		    	   existingNomineeDetailsEntities.get(i).setNomineeStatus("No");
+		       }
 			
-			
+		       nomineeDetailsRepository.saveAll(existingNomineeDetailsEntities);
+		       
+		       return "delete succesfully!!";
 		}
-		return "Person Delete Succesfully!!";
+		return "proposer not existed!!";
 
 	}
 
@@ -257,7 +266,38 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			personget.setPersonCity(pdRequestDto.getPersonCity()); 
 			personget.setPersonState(pdRequestDto.getPersonState());
 			
-			personalDetailsRepository.save(personget);
+			  PersonalDetailsEntity detailsEnity = personalDetailsRepository.save(personget);
+			  
+			  List<NomineeRequestDto> nomineedto = pdRequestDto.getNomineeDetails();
+			  
+			  List<NominieeDetailsEntity> nominieeDetailsEntities = new ArrayList<>();
+			  
+			  Optional<List<NominieeDetailsEntity>> optional = nomineeDetailsRepository.findAllByPersonId(detailsEnity.getPersonId());
+			  List<NominieeDetailsEntity> existingnominee = optional.get();
+			  
+			  for(int i=0;i<existingnominee.size();i++) {
+				  for(NomineeRequestDto dto1 : nomineedto) {
+					  
+					  existingnominee.get(i).setPersonId(detailsEnity.getPersonId());
+					  existingnominee.get(i).setNomineeDateOfBirth(dto1.getNomineeDateOfBirth());
+					  existingnominee.get(i).setNomineeGender(dto1.getNomineeGender());
+					  existingnominee.get(i).setNomineeRelationship(dto1.getNomineeRelationship());
+					  existingnominee.get(i).setNomineeName(dto1.getNomineeName());
+					  existingnominee.get(i).setNomineeNumber(dto1.getNomineeNumber());
+					  if (i==0) {
+						break;
+					}
+					  
+					  
+				  }
+				  
+				  nominieeDetailsEntities.add(existingnominee.get(i));
+			  }
+			  
+			  
+			nomineeDetailsRepository.saveAll(nominieeDetailsEntities);
+			
+			
 			
 			return "Person Details Update Succesfully!!";		}
 		else {
@@ -277,7 +317,6 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			
 			PersonalDetailsEntity perdetails = per.get();	
 			
-	
 			pddto.setPersonFirstName(perdetails.getPersonFirstName());
 			pddto.setPersonEmail(perdetails.getPersonEmail());
 			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());

@@ -41,6 +41,9 @@ public class NominieeDetailsEntity {
 	@Column(name = "person_id")
 	private Integer personId;
 	
+	@Column(name = "nominee_status")
+	private String nomineeStatus;
+	
 	
 	public NominieeDetailsEntity() {
 		// TODO Auto-generated constructor stub
@@ -56,6 +59,16 @@ public class NominieeDetailsEntity {
 		this.nomineeRelationship = nomineeRelationship;
 		this.nomineeDateOfBirth = nomineeDateOfBirth;
 		this.personId = personId;
+	}
+	
+	
+
+	public String getNomineeStatus() {
+		return nomineeStatus;
+	}
+
+	public void setNomineeStatus(String nomineeStatus) {
+		this.nomineeStatus = nomineeStatus;
 	}
 
 	public Integer getNomineeId() {
