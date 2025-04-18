@@ -3,6 +3,7 @@ package com.example.demo.entity;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -102,6 +103,8 @@ public class PersonalDetailsEntity {
 	@UpdateTimestamp
 	@Column(name = "updated_date")
 	private LocalDate updatedAt;
+	
+
 
 	public PersonalDetailsEntity() {
 		// TODO Auto-generated constructor stub

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -7,8 +8,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
+import com.example.demo.requestdto.NomineeRequestDto;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
 
@@ -17,6 +21,12 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	
 	@Autowired
 	private PersonalDetailsRepository personalDetailsRepository;
+	
+	@Autowired
+	private NomineeDetailsRepository nomineeDetailsRepository;
+	
+//	@Autowired
+//	private NomineeRequestDto nomineeRequestDto;
 
 	@Override
 	public String addPerson(PdRequestDto pdRequestDto) {
@@ -28,9 +38,6 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	        errors.add("Title is missing");
 	    }
 
-//	    if (pdRequestDto.getPersonFullName() == null || pdRequestDto.getPersonFullName().isEmpty()) {
-//	        errors.add("Full Name is missing");
-//	    }
 	    
 	    if(pdRequestDto.getPersonFirstName() == null || pdRequestDto.getPersonFirstName().isEmpty()) {
 	    	errors.add("FirstName is missing");
@@ -75,7 +82,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	        errors.add("Mobile Number is missing");
 	    } else if (personalDetailsRepository.existsByPersonMobileNo(pdRequestDto.getPersonMobileNo())) {
 	    	errors.add("Mobile Number Already Existing");
-	    }
+	    }  
 
 	    if (pdRequestDto.getPersonAlternateMobileNo() == null) {
 	        errors.add("Alternative Mobile Number is missing");
@@ -129,9 +136,32 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	    pdobj.setPersonPincode(pdRequestDto.getPersonPincode());
 	    pdobj.setPersonCity(pdRequestDto.getPersonCity());
 	    pdobj.setPersonState(pdRequestDto.getPersonState());
+	    
+	    
 
-	    personalDetailsRepository.save(pdobj);
-	    return "Added Successfully";
+	  PersonalDetailsEntity personalid= personalDetailsRepository.save(pdobj);
+	    
+	    List<NomineeRequestDto> nomineeDetail = pdRequestDto.getNomineeDetails();
+	    
+	    List<NominieeDetailsEntity> list = new ArrayList<>();
+	    
+	    for (NomineeRequestDto nomineeRequestDto : nomineeDetail) {
+	    	
+			NominieeDetailsEntity nominee = new NominieeDetailsEntity();
+			
+			nominee.setNomineeName(nomineeRequestDto.getNomineeName());
+			nominee.setNomineeNumber(nomineeRequestDto.getNomineeNumber());
+			nominee.setNomineeDateOfBirth(nomineeRequestDto.getNomineeDateOfBirth());
+			nominee.setNomineeGender(nomineeRequestDto.getNomineeGender());
+			nominee.setNomineeRelationship(nomineeRequestDto.getNomineeRelationship());
+			nominee.setPersonId(personalid.getPersonId());
+			
+			list.add(nominee);	    	
+		}
+	    
+	    nomineeDetailsRepository.saveAll(list);
+	    
+	    return "Person And Nominee Added Successfully";
 	}
 
 
@@ -159,6 +189,9 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			dtoobj.setPersonCity(personalDetailsEntity.getPersonCity());
 			dtoobj.setPersonState(personalDetailsEntity.getPersonState());
 			dtoobj.setStatus(personalDetailsEntity.getStatus());
+			dtoobj.setPersonPanNumber(personalDetailsEntity.getPersonPanNumber());
+			dtoobj.setPersonMaritalStatus(personalDetailsEntity.getPersonMaritalStatus());
+			dtoobj.setPersonEmail(personalDetailsEntity.getPersonEmail());
 			
 //			dtoobj.setPersonFullName(personalDetailsEntity.getPersonFullName());
 			
@@ -235,14 +268,63 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	
 	@Override
-	public String findbyidPersonDetails(Integer personId) {
+	public PdRequestDto findbyidPersonDetails(Integer personId) {
+		
 		Optional<PersonalDetailsEntity> per = personalDetailsRepository.findById(personId);
+		PdRequestDto pddto = new PdRequestDto();
 		
 		if (per.isPresent()) {
 			
+			PersonalDetailsEntity perdetails = per.get();	
 			
+	
+			pddto.setPersonFirstName(perdetails.getPersonFirstName());
+			pddto.setPersonEmail(perdetails.getPersonEmail());
+			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());
+			pddto.setPersonAadhaarNumber(perdetails.getPersonAadhaarNumber());
+			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());
+			pddto.setPersonAddress1(perdetails.getPersonAddress1());
+			pddto.setPersonAlternateMobileNo(perdetails.getPersonAlternateMobileNo());
+			pddto.setPersonCity(perdetails.getPersonCity());
+			pddto.setPersonDateOfBirth(perdetails.getPersonDateOfBirth());
+			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());
+			pddto.setPersonLastName(perdetails.getPersonLastName());
+			pddto.setPersonAddress2(perdetails.getPersonAddress2());
+			pddto.setPersonLastName(perdetails.getPersonLastName());
+			pddto.setPersonGender(perdetails.getPersonGender());
+			pddto.setPersonPanNumber(perdetails.getPersonPanNumber());
+			pddto.setPersonMaritalStatus(perdetails.getPersonMaritalStatus());
+			pddto.setPersonMobileNo(perdetails.getPersonMobileNo());
+			pddto.setPersonAddress3(perdetails.getPersonAddress3());
+			pddto.setPersonPincode(perdetails.getPersonPincode());
+			pddto.setPersonTilte(perdetails.getPersonTilte());
+			pddto.setPersonState(perdetails.getPersonState());
+			
+			Integer proposerId = perdetails.getPersonId();
+			
+		List<NominieeDetailsEntity> nomieobj=nomineeDetailsRepository.getAllByPersonId(personId);
+		
+		List<NomineeRequestDto> list = new ArrayList<>();
+			
+			for (NominieeDetailsEntity nominieeDetailsEntity : nomieobj) {
+				
+				
+				NomineeRequestDto nomidto = new NomineeRequestDto();
+				
+				nomidto.setNomineeName(nominieeDetailsEntity.getNomineeName());
+				nomidto.setNomineeDateOfBirth(nominieeDetailsEntity.getNomineeDateOfBirth());
+				nomidto.setNomineeGender(nominieeDetailsEntity.getNomineeGender());
+				nomidto.setNomineeNumber(nominieeDetailsEntity.getNomineeNumber());
+				nomidto.setNomineeRelationship(nominieeDetailsEntity.getNomineeRelationship());
+				nomidto.setPersonId(nominieeDetailsEntity.getPersonId());
+				
+				list.add(nomidto);
+			}
+			
+			pddto.setNomineeDetails(list);
+		
 		}
-		return null;
+		return pddto;
 	}
 
 }

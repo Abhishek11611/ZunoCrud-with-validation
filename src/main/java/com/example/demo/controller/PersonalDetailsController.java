@@ -113,4 +113,24 @@ public class PersonalDetailsController {
 		return response;
 		
 	}
+	
+	@GetMapping("/get-personbyid/{personId}")
+	public ResponseHandler findbyidPersonDetails(@PathVariable Integer personId) {
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			PdRequestDto data = personalDetailsService.findbyidPersonDetails(personId);
+			response.setData(data);
+			response.setStatus(true);
+			response.setMessage("Success");
+			
+		} catch (Exception e) {
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage("failed");		
+		}	
+		
+		return response;
+		
+	}
 }

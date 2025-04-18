@@ -1,7 +1,9 @@
 package com.example.demo.requestdto;
 
 import java.util.Date;
+import java.util.List;
 
+import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.enums.Gender;
 import com.example.demo.enums.MaritalStatus;
 import com.example.demo.enums.Title;
@@ -31,6 +33,7 @@ public class PdRequiredDto {
 	
 // Status
 	private String status ="Yes";
+	
 
 	public Title getPersonTilte() {
 		return PersonTilte;

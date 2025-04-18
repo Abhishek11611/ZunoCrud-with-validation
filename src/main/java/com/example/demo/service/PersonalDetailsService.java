@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.requestdto.PdRequestDto;
@@ -16,6 +17,6 @@ public interface PersonalDetailsService {
 	
 	public String updatepersonById(Integer personId,PdRequestDto pdRequestDto);
 	
-	public String findbyidPersonDetails(Integer personId);
+	public PdRequestDto findbyidPersonDetails(Integer personId);
 
 }
