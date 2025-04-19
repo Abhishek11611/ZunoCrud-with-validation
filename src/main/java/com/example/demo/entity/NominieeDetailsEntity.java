@@ -42,7 +42,7 @@ public class NominieeDetailsEntity {
 	private Integer personId;
 	
 	@Column(name = "nominee_status")
-	private String nomineeStatus;
+	private String nomineeStatus = "Yes";
 	
 	
 	public NominieeDetailsEntity() {

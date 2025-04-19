@@ -13,44 +13,55 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
 public class PdRequestDto {
-	
+
 	private Title PersonTilte;
-	private String personFirstName;	
+	private String personFirstName;
 	private String personMiddleName;
 	private String personLastName;
 	private Gender personGender;
 	private Date personDateOfBirth;
 	private String personPanNumber;
 	private Long personAadhaarNumber;
-	private MaritalStatus personMaritalStatus; 
-	
+	private MaritalStatus personMaritalStatus;
+
 //Contact Details
 	private String personEmail;
 	private Long personMobileNo;
 	private Long personAlternateMobileNo;
-	
+
 //Address
 	private String personAddress1;
 	private String personAddress2;
 	private String personAddress3;
-	private Long  personPincode;
+	private Long personPincode;
 	private String personCity;
 	private String personState;
-	
-// Status
-	private String status ="Yes";
-	
-	
-	 private List<NomineeRequestDto> nomineeDetails;
-		
-		
 
-	public List<NomineeRequestDto> getNomineeDetails() {
+// Status
+	private String status = "Yes";
+	private String isUpdate = "Y";
+
+	
+
+	private NomineeRequestDto nomineeDetails;
+
+	
+	
+	
+	public NomineeRequestDto getNomineeDetails() {
 		return nomineeDetails;
 	}
 
-	public void setNomineeDetails(List<NomineeRequestDto> nomineeDetails) {
+	public void setNomineeDetails(NomineeRequestDto nomineeDetails) {
 		this.nomineeDetails = nomineeDetails;
+	}
+
+	public String getIsUpdate() {
+		return isUpdate;
+	}
+
+	public void setIsUpdate(String isUpdate) {
+		this.isUpdate = isUpdate;
 	}
 
 	public Title getPersonTilte() {
@@ -60,7 +71,6 @@ public class PdRequestDto {
 	public void setPersonTilte(Title personTilte) {
 		PersonTilte = personTilte;
 	}
-	
 
 	public Gender getPersonGender() {
 		return personGender;
@@ -205,7 +215,5 @@ public class PdRequestDto {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
-	
 
 }

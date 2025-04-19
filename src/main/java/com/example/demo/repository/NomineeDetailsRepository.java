@@ -11,5 +11,5 @@ public interface NomineeDetailsRepository extends JpaRepository<NominieeDetailsE
 	
 	public List<NominieeDetailsEntity> getAllByPersonId(Integer personId);
 	
-	public Optional<List<NominieeDetailsEntity>> findAllByPersonId(Integer personId);
+	public Optional<NominieeDetailsEntity> findAllByPersonId(Integer personId);
 }
