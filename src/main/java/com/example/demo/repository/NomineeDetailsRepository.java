@@ -9,7 +9,10 @@ import com.example.demo.entity.NominieeDetailsEntity;
 
 public interface NomineeDetailsRepository extends JpaRepository<NominieeDetailsEntity, Integer>{
 	
-	public List<NominieeDetailsEntity> getAllByPersonId(Integer personId);
+//	public List<NominieeDetailsEntity> getAllByPersonId(Integer personId);
+	public Optional<NominieeDetailsEntity> findByPersonIdAndNomineeStatus(Integer personId,String nomineeStatus);
 	
 	public Optional<NominieeDetailsEntity> findAllByPersonId(Integer personId);
 }
+
+//findByPersonIdAndStatus

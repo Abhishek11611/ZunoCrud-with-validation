@@ -372,7 +372,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			pddto.setPersonEmail(perdetails.getPersonEmail());
 			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());
 			pddto.setPersonAadhaarNumber(perdetails.getPersonAadhaarNumber());
-			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());
+//			pddto.setPersonMiddleName(perdetails.getPersonMiddleName());
 			pddto.setPersonAddress1(perdetails.getPersonAddress1());
 			pddto.setPersonAlternateMobileNo(perdetails.getPersonAlternateMobileNo());
 			pddto.setPersonCity(perdetails.getPersonCity());
@@ -392,25 +392,39 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 			Integer proposerId = perdetails.getPersonId();
 
-			List<NominieeDetailsEntity> nomieobj = nomineeDetailsRepository.getAllByPersonId(personId);
+			Optional<NominieeDetailsEntity> nomieobj = nomineeDetailsRepository.findByPersonIdAndNomineeStatus(personId,"Yes");
+			
+			NominieeDetailsEntity existingnominee = nomieobj.get();
+			
+			NomineeRequestDto nomidto = new NomineeRequestDto();
+			
+		
+			
+			nomidto.setNomineeName(existingnominee.getNomineeName());
+			nomidto.setNomineeNumber(existingnominee.getNomineeNumber());
+			nomidto.setNomineeRelationship(existingnominee.getNomineeRelationship());
+			nomidto.setNomineeDateOfBirth(existingnominee.getNomineeDateOfBirth());
+			nomidto.setNomineeGender(existingnominee.getNomineeGender());
+			nomidto.setPersonId(personId);
+			
+			
+			
 
-			List<NomineeRequestDto> list = new ArrayList<>();
+//			for (NominieeDetailsEntity nominieeDetailsEntity : nomieobj) {
+//
+//				NomineeRequestDto nomidto = new NomineeRequestDto();
+//
+//				nomidto.setNomineeName(nominieeDetailsEntity.getNomineeName());
+//				nomidto.setNomineeDateOfBirth(nominieeDetailsEntity.getNomineeDateOfBirth());
+//				nomidto.setNomineeGender(nominieeDetailsEntity.getNomineeGender());
+//				nomidto.setNomineeNumber(nominieeDetailsEntity.getNomineeNumber());
+//				nomidto.setNomineeRelationship(nominieeDetailsEntity.getNomineeRelationship());
+//				nomidto.setPersonId(nominieeDetailsEntity.getPersonId());
+//
+//				list.add(nomidto);
+//			}
 
-			for (NominieeDetailsEntity nominieeDetailsEntity : nomieobj) {
-
-				NomineeRequestDto nomidto = new NomineeRequestDto();
-
-				nomidto.setNomineeName(nominieeDetailsEntity.getNomineeName());
-				nomidto.setNomineeDateOfBirth(nominieeDetailsEntity.getNomineeDateOfBirth());
-				nomidto.setNomineeGender(nominieeDetailsEntity.getNomineeGender());
-				nomidto.setNomineeNumber(nominieeDetailsEntity.getNomineeNumber());
-				nomidto.setNomineeRelationship(nominieeDetailsEntity.getNomineeRelationship());
-				nomidto.setPersonId(nominieeDetailsEntity.getPersonId());
-
-				list.add(nomidto);
-			}
-
-//			pddto.setNomineeDetails(list);
+			pddto.setNomineeDetails(nomidto);
 
 		}
 		return pddto;
