@@ -11,7 +11,7 @@ public interface PersonalDetailsService {
 	
 	public String addPerson(PdRequestDto pdRequestDto);
 	
-	public List<PdRequiredDto> getAllPersonDetails();
+	public List<PdRequiredDto> getAllPersonDetails( Integer pageNumber, Integer pageSize);
 	
 	public String deletePersonDetails(Integer personId);
 	

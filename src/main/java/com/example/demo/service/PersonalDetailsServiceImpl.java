@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.NominieeDetailsEntity;
@@ -161,8 +164,14 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	}
 
 	@Override
-	public List<PdRequiredDto> getAllPersonDetails() {
-		List<PersonalDetailsEntity> perlist = personalDetailsRepository.findByStatus("Yes");
+	public List<PdRequiredDto> getAllPersonDetails(Integer pageNumber, Integer pageSize) {
+		
+		Pageable p = PageRequest.of(pageNumber, pageSize);
+		
+		Page<PersonalDetailsEntity> pageresult = personalDetailsRepository.findByStatus("Yes",p);
+		
+		List<PersonalDetailsEntity> perlist = pageresult.getContent();
+				
 		List<PdRequiredDto> dtobj = new ArrayList<>();
 
 		for (PersonalDetailsEntity personalDetailsEntity : perlist) {

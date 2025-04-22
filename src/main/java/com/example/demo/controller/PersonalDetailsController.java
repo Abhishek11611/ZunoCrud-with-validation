@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.PersonalDetailsEntity;
@@ -53,14 +54,21 @@ public class PersonalDetailsController {
 	   
 	
 	@GetMapping("/getall-person")
-	public ResponseHandler getAllPersonDetails(){
+	public ResponseHandler getAllPersonDetails(@RequestParam(value = "pageNumber",defaultValue = "0",required = false)Integer pageNumber,
+											   @RequestParam(value = "pageSize",defaultValue = "5",required = false)Integer pageSize){
 		ResponseHandler response = new ResponseHandler();
 		
+		
 		try {
-			List<PdRequiredDto> data =	personalDetailsService.getAllPersonDetails();
+			List<PdRequiredDto> data =	personalDetailsService.getAllPersonDetails(pageNumber,pageSize);
+			int count=0;
+			for(int i=1;i<=data.size();i++) {
+				count++;
+			}
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
+			response.setTotalRecord(count);
 			
 		} catch (Exception e) {
 			response.setData(new ArrayList<>());
