@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.pagination.PersonalDetailsListing;
+import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
 import com.example.demo.requestdto.NomineeRequestDto;
@@ -23,6 +24,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 @Service
@@ -232,44 +234,68 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	
 	@Override
 	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing) {
-		
-		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-		CriteriaQuery<PersonalDetailsEntity> cq = cb.createQuery(PersonalDetailsEntity.class);
-		Root<PersonalDetailsEntity> root = cq.from(PersonalDetailsEntity.class);
-		
-		cq.where(cb.equal(root.get("status"),"Yes"));
-		
-		String sortBy = personalDetailsListing.getSortBy();
-		if(sortBy == null || sortBy.isEmpty()) {
-			sortBy = "personId";
-		}
-		
-		String sortOrder = personalDetailsListing.getSortOrder();
-		if(sortOrder ==null || sortOrder.isEmpty()) {
-			sortOrder="desc";
-		}
-		
-		if(sortOrder.equalsIgnoreCase("desc")) {
-			cq.orderBy(cb.desc(root.get(sortBy)));
-		}else {
-			cq.orderBy(cb.asc(root.get(sortBy)));
-		}
-		
-		int page = personalDetailsListing.getPageNumber();
-		int size = personalDetailsListing.getPageSize();
-		
-		TypedQuery<PersonalDetailsEntity> query = entityManager.createQuery(cq);
-		
-		if (page ==0 && size ==0) {
-			return query.getResultList();
-		}
-		
-		query.setFirstResult(page * size);
-		query.setMaxResults(size);
-		
-		List<PersonalDetailsEntity> personallist = query.getResultList();		
-		return personallist;
 
+
+	    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+	    CriteriaQuery<PersonalDetailsEntity> cq = cb.createQuery(PersonalDetailsEntity.class);
+	    Root<PersonalDetailsEntity> root = cq.from(PersonalDetailsEntity.class);
+
+	    List<Predicate> predicates = new ArrayList<>();
+
+	    predicates.add(cb.equal(root.get("status"), "Yes"));
+
+	   
+	    PersonalDetailsSearch personalDetailsSearch = personalDetailsListing.getPersonalDetailsSearch();
+
+	    
+	    if (personalDetailsSearch != null && personalDetailsSearch.getPersonFirstName() != null && !personalDetailsSearch.getPersonFirstName().isEmpty()) {
+	        predicates.add(cb.like(cb.lower(root.get("personFirstName")), "%" + personalDetailsSearch.getPersonFirstName().toLowerCase() + "%"));
+	    }
+
+	   
+	    if (personalDetailsSearch != null && personalDetailsSearch.getPersonLastName() != null && !personalDetailsSearch.getPersonLastName().isEmpty()) {
+	        predicates.add(cb.like(cb.lower(root.get("personLastName")), "%" + personalDetailsSearch.getPersonLastName().toLowerCase() + "%"));
+	    }
+
+	   
+	    if (personalDetailsSearch != null && personalDetailsSearch.getPersonMobileNo() != null && !personalDetailsSearch.getPersonMobileNo().toString().isEmpty()) {
+	        predicates.add(cb.equal(root.get("personMobileNo"), personalDetailsSearch.getPersonMobileNo()));
+	    }
+
+	    
+	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
+
+	    
+	    String sortBy = personalDetailsListing.getSortBy();
+	    if (sortBy == null || sortBy.isEmpty()) {
+	        sortBy = "personId";
+	    }
+
+	    String sortOrder = personalDetailsListing.getSortOrder();
+	    if (sortOrder == null || sortOrder.isEmpty()) {
+	        sortOrder = "desc";
+	    }
+
+	    if (sortOrder.equalsIgnoreCase("desc")) {
+	        cq.orderBy(cb.desc(root.get(sortBy)));
+	    } else {
+	        cq.orderBy(cb.asc(root.get(sortBy)));
+	    }
+
+	   
+	    int page = personalDetailsListing.getPageNumber();
+	    int size = personalDetailsListing.getPageSize();
+
+	    TypedQuery<PersonalDetailsEntity> query = entityManager.createQuery(cq);
+
+	    if (page == 0 && size == 0) {
+	        return query.getResultList(); 
+	    }
+
+	    query.setFirstResult(page * size); 
+	    query.setMaxResults(size);         
+
+	    return query.getResultList();
 	}
 
 //========================================================== Delete proposal =================================================================

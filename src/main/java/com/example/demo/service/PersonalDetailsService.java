@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.pagination.PersonalDetailsListing;
+import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
 

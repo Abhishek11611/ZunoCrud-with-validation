@@ -1,11 +1,24 @@
 package com.example.demo.pagination;
 
+import java.util.List;
+
 public class PersonalDetailsListing {
 	
 	private Integer pageNumber;
 	private Integer pageSize;
 	private String sortBy;
 	private String sortOrder;
+	
+	private PersonalDetailsSearch personalDetailsSearch;
+	
+	
+	
+	public PersonalDetailsSearch getPersonalDetailsSearch() {
+		return personalDetailsSearch;
+	}
+	public void setPersonalDetailsSearch(PersonalDetailsSearch personalDetailsSearch) {
+		this.personalDetailsSearch = personalDetailsSearch;
+	}
 	public Integer getPageNumber() {
 		return pageNumber;
 	}
