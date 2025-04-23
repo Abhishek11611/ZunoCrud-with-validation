@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
 import com.example.demo.response.ResponseHandler;
@@ -41,7 +42,13 @@ public class PersonalDetailsController {
             response.setStatus(true);
             response.setMessage("Success");
 
-	    } catch (Exception e) {
+	    } catch (IllegalArgumentException e) {
+	    	e.printStackTrace();
+	        response.setData(new ArrayList<>());
+	        response.setStatus(false);
+	        response.setMessage(e.getMessage());
+	       
+	    }catch (Exception e) {
 	        response.setData(new ArrayList<>());
 	        response.setStatus(false);
 	        response.setMessage(e.getMessage());
@@ -53,27 +60,30 @@ public class PersonalDetailsController {
 
 	   
 	
-	@GetMapping("/getall-person")
-	public ResponseHandler getAllPersonDetails(@RequestParam(value = "pageNumber",defaultValue = "0",required = false)Integer pageNumber,
-											   @RequestParam(value = "pageSize",defaultValue = "5",required = false)Integer pageSize){
+	@PostMapping("/getall-person")
+	public ResponseHandler getAllPersonDetails(@RequestBody PersonalDetailsListing personalDetailsListing){
 		ResponseHandler response = new ResponseHandler();
 		
 		
 		try {
-			List<PdRequiredDto> data =	personalDetailsService.getAllPersonDetails(pageNumber,pageSize);
-			int count=0;
-			for(int i=1;i<=data.size();i++) {
-				count++;
-			}
+			List<PersonalDetailsEntity> data =	personalDetailsService.getAllPersonDetails(personalDetailsListing);
+			
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
-			response.setTotalRecord(count);
+			response.setTotalRecord(data.size());
 			
-		} catch (Exception e) {
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
 			response.setData(new ArrayList<>());
 			response.setStatus(false);
-			response.setMessage("failed");
+			response.setMessage(e.getMessage());
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage(e.getMessage());
 			
 		}
 		
@@ -113,11 +123,17 @@ public class PersonalDetailsController {
 			response.setStatus(true);
 			response.setMessage("Success");
 			
-		} catch (Exception e) {
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage(e.getMessage());		
+		}
+		catch (Exception e) {
 			response.setData(new ArrayList<>());
 			response.setStatus(false);
 			response.setMessage("failed");		
-		}		
+		}	
 		return response;
 		
 	}

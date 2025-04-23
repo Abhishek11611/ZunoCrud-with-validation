@@ -12,11 +12,18 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
 import com.example.demo.requestdto.NomineeRequestDto;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 @Service
 public class PersonalDetailsServiceImpl implements PersonalDetailsService {
@@ -29,7 +36,11 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 //	@Autowired
 //	private NomineeRequestDto nomineeRequestDto;
-
+	
+	@Autowired
+	private EntityManager entityManager;
+	
+//================================================= Add proposal ===========================================================================
 	@Override
 	public String addPerson(PdRequestDto pdRequestDto) {
 
@@ -162,60 +173,106 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 		return "Person And Nominee Added Successfully";
 	}
+	
+//	==================================================== GetAll proposal =============================================================
 
+//	@Override
+//	public List<PdRequiredDto> getAllPersonDetails(Integer pageNumber, Integer pageSize) {
+//		
+//		Pageable p = PageRequest.of(pageNumber, pageSize);
+//		
+//		Page<PersonalDetailsEntity> pageresult = personalDetailsRepository.findByStatus("Yes",p);
+//		
+//		List<PersonalDetailsEntity> perlist = pageresult.getContent();
+//				
+//		List<PdRequiredDto> dtobj = new ArrayList<>();
+//
+//		for (PersonalDetailsEntity personalDetailsEntity : perlist) {
+//
+//			PdRequiredDto dtoobj = new PdRequiredDto();
+//
+//			dtoobj.setPersonTilte(personalDetailsEntity.getPersonTilte());
+//			dtoobj.setPersonGender(personalDetailsEntity.getPersonGender());
+//			dtoobj.setPersonDateOfBirth(personalDetailsEntity.getPersonDateOfBirth());
+//			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
+//			dtoobj.setPersonAadhaarNumber(personalDetailsEntity.getPersonAadhaarNumber());
+//			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
+//			dtoobj.setPersonAddress2(personalDetailsEntity.getPersonAddress2());
+//			dtoobj.setPersonAddress3(personalDetailsEntity.getPersonAddress3());
+//			dtoobj.setPersonMobileNo(personalDetailsEntity.getPersonMobileNo());
+//			dtoobj.setPersonAlternateMobileNo(personalDetailsEntity.getPersonAlternateMobileNo());
+//			dtoobj.setPersonPincode(personalDetailsEntity.getPersonPincode());
+//			dtoobj.setPersonCity(personalDetailsEntity.getPersonCity());
+//			dtoobj.setPersonState(personalDetailsEntity.getPersonState());
+//			dtoobj.setStatus(personalDetailsEntity.getStatus());
+//			dtoobj.setPersonPanNumber(personalDetailsEntity.getPersonPanNumber());
+//			dtoobj.setPersonMaritalStatus(personalDetailsEntity.getPersonMaritalStatus());
+//			dtoobj.setPersonEmail(personalDetailsEntity.getPersonEmail());
+//
+////			dtoobj.setPersonFullName(personalDetailsEntity.getPersonFullName());
+//
+//			StringBuilder builder = new StringBuilder();
+//
+//			builder.append(personalDetailsEntity.getPersonFirstName() + " ");
+//
+//			if (personalDetailsEntity.getPersonMiddleName() != null) {
+//				builder.append(personalDetailsEntity.getPersonMiddleName());
+//			}
+//			builder.append(" " + personalDetailsEntity.getPersonLastName());
+//
+//			dtoobj.setPersonFullName(builder.toString());
+//
+//			dtobj.add(dtoobj);
+//		}
+//
+//		return dtobj;
+//
+//	}
+//======================================================= GetAll proposal =================================================================
+	
 	@Override
-	public List<PdRequiredDto> getAllPersonDetails(Integer pageNumber, Integer pageSize) {
+	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing) {
 		
-		Pageable p = PageRequest.of(pageNumber, pageSize);
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<PersonalDetailsEntity> cq = cb.createQuery(PersonalDetailsEntity.class);
+		Root<PersonalDetailsEntity> root = cq.from(PersonalDetailsEntity.class);
 		
-		Page<PersonalDetailsEntity> pageresult = personalDetailsRepository.findByStatus("Yes",p);
+		cq.where(cb.equal(root.get("status"),"Yes"));
 		
-		List<PersonalDetailsEntity> perlist = pageresult.getContent();
-				
-		List<PdRequiredDto> dtobj = new ArrayList<>();
-
-		for (PersonalDetailsEntity personalDetailsEntity : perlist) {
-
-			PdRequiredDto dtoobj = new PdRequiredDto();
-
-			dtoobj.setPersonTilte(personalDetailsEntity.getPersonTilte());
-			dtoobj.setPersonGender(personalDetailsEntity.getPersonGender());
-			dtoobj.setPersonDateOfBirth(personalDetailsEntity.getPersonDateOfBirth());
-			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
-			dtoobj.setPersonAadhaarNumber(personalDetailsEntity.getPersonAadhaarNumber());
-			dtoobj.setPersonAddress1(personalDetailsEntity.getPersonAddress1());
-			dtoobj.setPersonAddress2(personalDetailsEntity.getPersonAddress2());
-			dtoobj.setPersonAddress3(personalDetailsEntity.getPersonAddress3());
-			dtoobj.setPersonMobileNo(personalDetailsEntity.getPersonMobileNo());
-			dtoobj.setPersonAlternateMobileNo(personalDetailsEntity.getPersonAlternateMobileNo());
-			dtoobj.setPersonPincode(personalDetailsEntity.getPersonPincode());
-			dtoobj.setPersonCity(personalDetailsEntity.getPersonCity());
-			dtoobj.setPersonState(personalDetailsEntity.getPersonState());
-			dtoobj.setStatus(personalDetailsEntity.getStatus());
-			dtoobj.setPersonPanNumber(personalDetailsEntity.getPersonPanNumber());
-			dtoobj.setPersonMaritalStatus(personalDetailsEntity.getPersonMaritalStatus());
-			dtoobj.setPersonEmail(personalDetailsEntity.getPersonEmail());
-
-//			dtoobj.setPersonFullName(personalDetailsEntity.getPersonFullName());
-
-			StringBuilder builder = new StringBuilder();
-
-			builder.append(personalDetailsEntity.getPersonFirstName() + " ");
-
-			if (personalDetailsEntity.getPersonMiddleName() != null) {
-				builder.append(personalDetailsEntity.getPersonMiddleName());
-			}
-			builder.append(" " + personalDetailsEntity.getPersonLastName());
-
-			dtoobj.setPersonFullName(builder.toString());
-
-			dtobj.add(dtoobj);
+		String sortBy = personalDetailsListing.getSortBy();
+		if(sortBy == null || sortBy.isEmpty()) {
+			sortBy = "personId";
 		}
-
-		return dtobj;
+		
+		String sortOrder = personalDetailsListing.getSortOrder();
+		if(sortOrder ==null || sortOrder.isEmpty()) {
+			sortOrder="desc";
+		}
+		
+		if(sortOrder.equalsIgnoreCase("desc")) {
+			cq.orderBy(cb.desc(root.get(sortBy)));
+		}else {
+			cq.orderBy(cb.asc(root.get(sortBy)));
+		}
+		
+		int page = personalDetailsListing.getPageNumber();
+		int size = personalDetailsListing.getPageSize();
+		
+		TypedQuery<PersonalDetailsEntity> query = entityManager.createQuery(cq);
+		
+		if (page ==0 && size ==0) {
+			return query.getResultList();
+		}
+		
+		query.setFirstResult(page * size);
+		query.setMaxResults(size);
+		
+		List<PersonalDetailsEntity> personallist = query.getResultList();		
+		return personallist;
 
 	}
 
+//========================================================== Delete proposal =================================================================
 	@Override
 	public String deletePersonDetails(Integer personId) {
 
@@ -243,6 +300,8 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	}
 
+//============================================================== Update Proposal ================================================================
+	
 	@Override
 	public String updatepersonById(Integer personId, PdRequestDto pdRequestDto) {
 
@@ -367,6 +426,8 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	}
 
+//================================================================= FindBy Id Proposal =======================================================
+	
 	@Override
 	public PdRequestDto findbyidPersonDetails(Integer personId) {
 

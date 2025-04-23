@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
 
@@ -11,7 +12,7 @@ public interface PersonalDetailsService {
 	
 	public String addPerson(PdRequestDto pdRequestDto);
 	
-	public List<PdRequiredDto> getAllPersonDetails( Integer pageNumber, Integer pageSize);
+	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing);
 	
 	public String deletePersonDetails(Integer personId);
 	
