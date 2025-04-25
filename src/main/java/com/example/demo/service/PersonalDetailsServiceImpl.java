@@ -176,7 +176,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 		return "Person And Nominee Added Successfully";
 	}
 	
-//	==================================================== GetAll proposal =============================================================
+//	==================================================== GetAll proposal By Pageable =============================================================
 
 //	@Override
 //	public List<PdRequiredDto> getAllPersonDetails(Integer pageNumber, Integer pageSize) {
@@ -230,42 +230,14 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 //		return dtobj;
 //
 //	}
-//======================================================= GetAll proposal =================================================================
+//===================================================== GetAll proposal ByString Builder =================================================================
+
 	
 	@Override
-	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing) {
+	public List<PersonalDetailsEntity> fetchAllByStringbuilder(PersonalDetailsListing personalDetailsListing) {
 
+	    StringBuilder builder = new StringBuilder("select p from PersonalDetailsEntity p where p.status = 'Yes'");
 
-	    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-	    CriteriaQuery<PersonalDetailsEntity> cq = cb.createQuery(PersonalDetailsEntity.class);
-	    Root<PersonalDetailsEntity> root = cq.from(PersonalDetailsEntity.class);
-
-	    List<Predicate> predicates = new ArrayList<>();
-
-	    predicates.add(cb.equal(root.get("status"), "Yes"));
-
-	   
-	    PersonalDetailsSearch personalDetailsSearch = personalDetailsListing.getPersonalDetailsSearch();
-
-	    
-	    if (personalDetailsSearch != null && personalDetailsSearch.getPersonFirstName() != null && !personalDetailsSearch.getPersonFirstName().isEmpty()) {
-	        predicates.add(cb.like(cb.lower(root.get("personFirstName")), "%" + personalDetailsSearch.getPersonFirstName().toLowerCase() + "%"));
-	    }
-
-	   
-	    if (personalDetailsSearch != null && personalDetailsSearch.getPersonLastName() != null && !personalDetailsSearch.getPersonLastName().isEmpty()) {
-	        predicates.add(cb.like(cb.lower(root.get("personLastName")), "%" + personalDetailsSearch.getPersonLastName().toLowerCase() + "%"));
-	    }
-
-	   
-	    if (personalDetailsSearch != null && personalDetailsSearch.getPersonMobileNo() != null && !personalDetailsSearch.getPersonMobileNo().toString().isEmpty()) {
-	        predicates.add(cb.equal(root.get("personMobileNo"), personalDetailsSearch.getPersonMobileNo()));
-	    }
-
-	    
-	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
-
-	    
 	    String sortBy = personalDetailsListing.getSortBy();
 	    if (sortBy == null || sortBy.isEmpty()) {
 	        sortBy = "personId";
@@ -275,29 +247,134 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	    if (sortOrder == null || sortOrder.isEmpty()) {
 	        sortOrder = "desc";
 	    }
+	    PersonalDetailsSearch search = personalDetailsListing.getPersonalDetailsSearch();
+	    
+		String firstName = search.getPersonFirstName();
+		String lastName = search.getPersonLastName();
+		Long mobileNo = search.getPersonMobileNo();
 
-	    if (sortOrder.equalsIgnoreCase("desc")) {
-	        cq.orderBy(cb.desc(root.get(sortBy)));
-	    } else {
-	        cq.orderBy(cb.asc(root.get(sortBy)));
+	    
+	    if (search != null) {
+	    	
+	        if (firstName != null && !firstName.isEmpty()) {
+	        	builder.append(" and lower(p.personFirstName) like '%").append(firstName.toLowerCase()).append("%'");
+	        }
+	        
+	        if(lastName!=null && !lastName.isEmpty()) {
+	        	builder.append(" and lower(personLastName) like '%").append(lastName.toLowerCase()).append("%'");
+	        }
+	        
+	        if(mobileNo!=null && !mobileNo.toString().isEmpty()) {
+	        	builder.append(" and personMobileNo =").append(mobileNo);
+	        }
+	        
 	    }
 
-	   
+	    builder.append(" order by p.").append(sortBy).append(" ").append(sortOrder);
+	    
 	    int page = personalDetailsListing.getPageNumber();
 	    int size = personalDetailsListing.getPageSize();
 
-	    TypedQuery<PersonalDetailsEntity> query = entityManager.createQuery(cq);
-
-	    if (page == 0 && size == 0) {
-	        return query.getResultList(); 
-	    }
-
-	    query.setFirstResult(page * size); 
-	    query.setMaxResults(size);         
-
+	    TypedQuery<PersonalDetailsEntity> query = entityManager.createQuery(builder.toString(), PersonalDetailsEntity.class);
+	    
+	    int startIndex = ((page - 1) * size);
+	    int endIndex = startIndex + size;
+	    
+	    if (page > 0 && size > 0) {
+	    
+	        query.setFirstResult(startIndex);
+	        query.setMaxResults(size);
+	        
+	       }else  if(page == 0 && size >0 || page > 0 && size ==0) {
+	    		
+	    		throw new IllegalArgumentException("page or Size can't be zero ");
+	    	}
+	    
 	    return query.getResultList();
 	}
 
+//======================================================= GetAll proposal =================================================================
+	
+	
+//	@Override
+//	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing) {
+//
+//
+//	    CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+//	    CriteriaQuery<PersonalDetailsEntity> cq = cb.createQuery(PersonalDetailsEntity.class);
+//	    Root<PersonalDetailsEntity> root = cq.from(PersonalDetailsEntity.class);
+//
+//	    List<Predicate> predicates = new ArrayList<>();
+//
+//	    predicates.add(cb.equal(root.get("status"), "Yes"));
+//
+//	   
+//	    PersonalDetailsSearch personalDetailsSearch = personalDetailsListing.getPersonalDetailsSearch();
+//
+//		String firstName = personalDetailsSearch.getPersonFirstName();
+//		String lastName = personalDetailsSearch.getPersonLastName();
+//		Long mobileNo = personalDetailsSearch.getPersonMobileNo();
+//	    
+//	    if(personalDetailsSearch != null) {
+//	    	
+//	    	 if ( firstName != null && !firstName.isEmpty()) {
+//	 	        predicates.add(cb.like(cb.lower(root.get("personFirstName")), "%" + firstName.toLowerCase() + "%"));
+//	 	    }
+//
+//	 	    if ( lastName != null && !lastName.isEmpty()) {
+//	 	        predicates.add(cb.like(cb.lower(root.get("personLastName")), "%" + lastName.toLowerCase() + "%"));
+//	 	    }
+//
+//	 	    if ( mobileNo != null && !mobileNo.toString().isEmpty()) {
+//	 	        predicates.add(cb.equal(root.get("personMobileNo"), mobileNo));
+//	 	    }
+//	    }
+//	    
+//    
+//	    cq.where(cb.and(predicates.toArray(new Predicate[0])));
+//
+//	    
+//	    String sortBy = personalDetailsListing.getSortBy();
+//	    
+//	    if (sortBy == null || sortBy.isEmpty()) {
+//	        sortBy = "personId";
+//	    }
+//
+//	    String sortOrder = personalDetailsListing.getSortOrder();
+//	    if (sortOrder == null || sortOrder.isEmpty()) {
+//	        sortOrder = "desc";
+//	    }
+//
+//	    if (sortOrder.equalsIgnoreCase("desc")) {
+//	        cq.orderBy(cb.desc(root.get(sortBy)));
+//	    } else {
+//	        cq.orderBy(cb.asc(root.get(sortBy)));
+//	    }
+//
+//	   
+//	    int page = personalDetailsListing.getPageNumber();
+//	    int size = personalDetailsListing.getPageSize();
+//
+//	    TypedQuery<PersonalDetailsEntity> query = entityManager.createQuery(cq);
+//
+//	    int startIndex = ((page - 1) * size);
+//	    int endIndex = startIndex + size;
+//	    
+//	    if (page >= 0 && size > 0) {
+//	    
+//	        query.setFirstResult(startIndex);
+//	        query.setMaxResults(size);
+//	        
+//	       }else  if(page == 0 && size >0 || page > 0 && size ==0) {
+//	    		
+//	    		throw new IllegalArgumentException("page cant be zero");
+//	    	}
+//    
+//
+//	    return query.getResultList();
+//	}
+
+	
 //========================================================== Delete proposal =================================================================
 	@Override
 	public String deletePersonDetails(Integer personId) {
@@ -525,5 +602,15 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 		}
 		return pddto;
 	}
+
+//==================================================== Page Size ======================================================================
+	
+	@Override
+	public Integer countAllProposal() {
+		List<PersonalDetailsEntity> getallRecord = personalDetailsRepository.findByStatus("Yes");
+		return getallRecord.size();
+	}
+
+	
 
 }

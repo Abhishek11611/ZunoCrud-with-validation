@@ -13,12 +13,16 @@ public interface PersonalDetailsService {
 	
 	public String addPerson(PdRequestDto pdRequestDto);
 	
-	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing);
+//	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing);
 	
 	public String deletePersonDetails(Integer personId);
 	
 	public String updatepersonById(Integer personId,PdRequestDto pdRequestDto);
 	
 	public PdRequestDto findbyidPersonDetails(Integer personId);
+	
+	public Integer countAllProposal();
+	
+	public List<PersonalDetailsEntity> fetchAllByStringbuilder(PersonalDetailsListing personalDetailsListing);
 
 }

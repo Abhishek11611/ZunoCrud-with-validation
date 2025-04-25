@@ -4,6 +4,7 @@ public class PersonalDetailsSearch {
 	
 	private String personFirstName;
 	private String personLastName;
+	
 	private Long personMobileNo;
 	
 	

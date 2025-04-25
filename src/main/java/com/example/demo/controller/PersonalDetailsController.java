@@ -65,14 +65,21 @@ public class PersonalDetailsController {
 	public ResponseHandler getAllPersonDetails(@RequestBody PersonalDetailsListing personalDetailsListing){
 		ResponseHandler response = new ResponseHandler();
 		
+		Integer countAllProposal = personalDetailsService.countAllProposal();
 		
 		try {
-			List<PersonalDetailsEntity> data =	personalDetailsService.getAllPersonDetails(personalDetailsListing);
+			List<PersonalDetailsEntity> data =	personalDetailsService.fetchAllByStringbuilder(personalDetailsListing);
 			
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
-			response.setTotalRecord(data.size());
+			PersonalDetailsSearch search = personalDetailsListing.getPersonalDetailsSearch();
+			if(search!=null || !search.getPersonFirstName().isEmpty() || !search.getPersonLastName().isEmpty() || !search.getPersonMobileNo().toString().isEmpty()) {
+				response.setTotalRecord(data.size());
+			}
+			else {
+				response.setTotalRecord(countAllProposal);
+			}
 			
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();

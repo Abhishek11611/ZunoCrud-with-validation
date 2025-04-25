@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +18,9 @@ public interface PersonalDetailsRepository extends JpaRepository<PersonalDetails
 	
 //	public  List<PersonalDetailsEntity> findByStatus(String status,Pageable pageable);
 	
-	 public Page<PersonalDetailsEntity> findByStatus(String status, Pageable pageable);
+	public  List<PersonalDetailsEntity> findByStatus(String status);
+	
+//	 public Page<PersonalDetailsEntity> findByStatus(String status, Pageable pageable);
 	 
 	  public Optional<PersonalDetailsEntity> findByPersonIdAndStatus(Integer personId, String status);
 	  

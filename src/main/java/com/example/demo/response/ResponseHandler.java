@@ -7,6 +7,8 @@ public class ResponseHandler {
 	private String message;
 	private Integer totalRecord;
 	
+	
+	
 	public Object getData() {
 		return Data;
 	}
