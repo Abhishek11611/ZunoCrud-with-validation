@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -8,6 +9,8 @@ import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 public interface PersonalDetailsService {
 	
@@ -24,5 +27,7 @@ public interface PersonalDetailsService {
 	public Integer countAllProposal();
 	
 	public List<PersonalDetailsEntity> fetchAllByStringbuilder(PersonalDetailsListing personalDetailsListing);
+	
+	public void generateExcel(HttpServletResponse response) throws IOException;
 
 }

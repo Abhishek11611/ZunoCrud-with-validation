@@ -1,9 +1,13 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +30,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class PersonalDetailsServiceImpl implements PersonalDetailsService {
@@ -35,9 +41,6 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	@Autowired
 	private NomineeDetailsRepository nomineeDetailsRepository;
-
-//	@Autowired
-//	private NomineeRequestDto nomineeRequestDto;
 	
 	@Autowired
 	private EntityManager entityManager;
@@ -176,7 +179,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 		return "Person And Nominee Added Successfully";
 	}
 	
-//	==================================================== GetAll proposal By Pageable =============================================================
+//	==================================================== GetAll proposal ByPageable =============================================================
 
 //	@Override
 //	public List<PdRequiredDto> getAllPersonDetails(Integer pageNumber, Integer pageSize) {
@@ -230,7 +233,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 //		return dtobj;
 //
 //	}
-//===================================================== GetAll proposal ByString Builder =================================================================
+//===================================================== GetAll proposal ByStringBuilder =================================================================
 
 	
 	@Override
@@ -238,16 +241,13 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 	    StringBuilder builder = new StringBuilder("select p from PersonalDetailsEntity p where p.status = 'Yes'");
 
-	    String sortBy = personalDetailsListing.getSortBy();
-	    if (sortBy == null || sortBy.isEmpty()) {
-	        sortBy = "personId";
-	    }
-
-	    String sortOrder = personalDetailsListing.getSortOrder();
-	    if (sortOrder == null || sortOrder.isEmpty()) {
-	        sortOrder = "desc";
-	    }
+	    
 	    PersonalDetailsSearch search = personalDetailsListing.getPersonalDetailsSearch();
+	    
+	    if (search == null) {
+	        search = new PersonalDetailsSearch();
+	        personalDetailsListing.setPersonalDetailsSearch(search);
+	    }
 	    
 		String firstName = search.getPersonFirstName();
 		String lastName = search.getPersonLastName();
@@ -264,10 +264,25 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	        	builder.append(" and lower(personLastName) like '%").append(lastName.toLowerCase()).append("%'");
 	        }
 	        
-	        if(mobileNo!=null && !mobileNo.toString().isEmpty()) {
+	        if(mobileNo!=null && !mobileNo.toString().isEmpty() && mobileNo!=0) {
 	        	builder.append(" and personMobileNo =").append(mobileNo);
 	        }
 	        
+	    }
+	    
+	 
+	    String sortBy = personalDetailsListing.getSortBy();
+	    
+	    sortBy = (sortBy == null || sortBy.isEmpty()) ? "personId" : sortBy;
+	    
+//	    if (sortBy == null || sortBy.isEmpty()) {
+//	        sortBy = "personId";
+//	    }
+
+	    String sortOrder = personalDetailsListing.getSortOrder();
+	    
+	    if (sortOrder == null || sortOrder.isEmpty()) {
+	        sortOrder = "desc";
 	    }
 
 	    builder.append(" order by p.").append(sortBy).append(" ").append(sortOrder);
@@ -293,7 +308,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	    return query.getResultList();
 	}
 
-//======================================================= GetAll proposal =================================================================
+//========================================== GetAll proposal ByCriteriaQuery =================================================================
 	
 	
 //	@Override
@@ -609,6 +624,79 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	public Integer countAllProposal() {
 		List<PersonalDetailsEntity> getallRecord = personalDetailsRepository.findByStatus("Yes");
 		return getallRecord.size();
+	}
+
+	
+	
+//=================================================== ExportExcel ===================================================================
+	
+	@Override
+	public void generateExcel(HttpServletResponse response) throws IOException {
+		
+		List<PersonalDetailsEntity> getalldata = personalDetailsRepository.findAll();
+		
+		HSSFWorkbook workbook = new HSSFWorkbook();
+		HSSFSheet sheet = workbook.createSheet("Proposal Info");
+		HSSFRow row = sheet.createRow(0);
+		
+		row.createCell(0).setCellValue("personId");
+		row.createCell(1).setCellValue("personFirstName");
+		row.createCell(2).setCellValue("personMiddleName");
+		row.createCell(3).setCellValue("personLastName");
+		row.createCell(4).setCellValue("personGender");
+		row.createCell(5).setCellValue("personDateOfBirth");
+		row.createCell(6).setCellValue("personPanNumber");
+		row.createCell(7).setCellValue("personAadhaarNumber");
+		row.createCell(8).setCellValue("personMaritalStatus");
+		row.createCell(9).setCellValue("personEmail");
+		row.createCell(10).setCellValue("personAlternateMobileNo");
+		row.createCell(11).setCellValue("personAddress1");
+		row.createCell(12).setCellValue("personAddress2");
+		row.createCell(13).setCellValue("personAddress3");
+		row.createCell(14).setCellValue("personPincode");
+		row.createCell(15).setCellValue("personCity");
+		row.createCell(16).setCellValue("personState");
+		row.createCell(17).setCellValue("status");
+		row.createCell(18).setCellValue("personMobileNo");
+		
+		int dataRowIndex = 1;
+		
+		for(PersonalDetailsEntity personalDetailsEntity : getalldata) {
+			HSSFRow dataRow = sheet.createRow(dataRowIndex);
+			
+			dataRow.createCell(0).setCellValue(personalDetailsEntity.getPersonId());
+			dataRow.createCell(1).setCellValue(personalDetailsEntity.getPersonFirstName());
+			dataRow.createCell(2).setCellValue(personalDetailsEntity.getPersonMiddleName());
+			dataRow.createCell(3).setCellValue(personalDetailsEntity.getPersonLastName());
+			dataRow.createCell(4).setCellValue(personalDetailsEntity.getPersonGender().toString());
+			dataRow.createCell(5).setCellValue(personalDetailsEntity.getPersonDateOfBirth());
+			dataRow.createCell(6).setCellValue(personalDetailsEntity.getPersonPanNumber());
+			dataRow.createCell(7).setCellValue(personalDetailsEntity.getPersonAadhaarNumber());
+			dataRow.createCell(8).setCellValue(personalDetailsEntity.getPersonMaritalStatus().toString());
+			dataRow.createCell(9).setCellValue(personalDetailsEntity.getPersonEmail());
+			dataRow.createCell(10).setCellValue(personalDetailsEntity.getPersonAlternateMobileNo());
+			dataRow.createCell(11).setCellValue(personalDetailsEntity.getPersonAddress1());
+			dataRow.createCell(12).setCellValue(personalDetailsEntity.getPersonAddress2());
+			dataRow.createCell(13).setCellValue(personalDetailsEntity.getPersonAddress3());
+			dataRow.createCell(14).setCellValue(personalDetailsEntity.getPersonPincode());
+			dataRow.createCell(15).setCellValue(personalDetailsEntity.getPersonCity());
+			dataRow.createCell(16).setCellValue(personalDetailsEntity.getPersonState());
+			dataRow.createCell(17).setCellValue(personalDetailsEntity.getStatus());
+			dataRow.createCell(18).setCellValue(personalDetailsEntity.getPersonMobileNo());
+			
+			dataRowIndex ++;
+			
+		
+			
+			
+		}
+		
+		ServletOutputStream ops = response.getOutputStream();
+		workbook.write(ops);
+		workbook.close();
+		ops.close();
+		
+		
 	}
 
 	

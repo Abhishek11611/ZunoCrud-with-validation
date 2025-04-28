@@ -1,4 +1,4 @@
-package com.example.demo.controller;
+ package com.example.demo.controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,8 @@ import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
 import com.example.demo.response.ResponseHandler;
 import com.example.demo.service.PersonalDetailsService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/personaldetails-api")
@@ -73,7 +75,9 @@ public class PersonalDetailsController {
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
+			
 			PersonalDetailsSearch search = personalDetailsListing.getPersonalDetailsSearch();
+			
 			if(search!=null || !search.getPersonFirstName().isEmpty() || !search.getPersonLastName().isEmpty() || !search.getPersonMobileNo().toString().isEmpty()) {
 				response.setTotalRecord(data.size());
 			}
@@ -165,4 +169,17 @@ public class PersonalDetailsController {
 		return response;
 		
 	}
+	
+	@GetMapping("/excel")
+	public void generateExcelReport(HttpServletResponse response) throws Exception {
+		response.setContentType("application/octet-stream");
+		
+		String headerKey ="Content-Disposition";
+		String headerValue = "attachment;filename=proposal.xls";
+		
+		response.setHeader(headerKey, headerValue);
+		
+		personalDetailsService.generateExcel(response);
+	}
+	
 }
