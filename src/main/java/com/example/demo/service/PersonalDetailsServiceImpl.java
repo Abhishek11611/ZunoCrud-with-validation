@@ -1,37 +1,33 @@
 package com.example.demo.service;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.enums.Gender;
+import com.example.demo.enums.MaritalStatus;
+import com.example.demo.enums.Title;
 import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
 import com.example.demo.requestdto.NomineeRequestDto;
 import com.example.demo.requestdto.PdRequestDto;
-import com.example.demo.requestdto.PdRequiredDto;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class PersonalDetailsServiceImpl implements PersonalDetailsService {
@@ -629,76 +625,179 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	
 	
 //=================================================== ExportExcel ===================================================================
+//	@Override
+//	public void generateExcel(HttpServletResponse response) throws IOException {
+//	    List<PersonalDetailsEntity> getalldata = personalDetailsRepository.findAll();
+//
+//	    XSSFWorkbook workbook = new XSSFWorkbook();
+//	    XSSFSheet sheet = workbook.createSheet("Proposal Info");
+//	    XSSFRow row = sheet.createRow(0);
+//
+//	    row.createCell(0).setCellValue("personId");
+//	    row.createCell(1).setCellValue("personFirstName");
+//	    row.createCell(2).setCellValue("personMiddleName");
+//	    row.createCell(3).setCellValue("personLastName");
+//	    row.createCell(4).setCellValue("personGender");
+//	    row.createCell(5).setCellValue("personDateOfBirth");
+//	    row.createCell(6).setCellValue("personPanNumber");
+//	    row.createCell(7).setCellValue("personAadhaarNumber");
+//	    row.createCell(8).setCellValue("personMaritalStatus");
+//	    row.createCell(9).setCellValue("personEmail");
+//	    row.createCell(10).setCellValue("personAlternateMobileNo");
+//	    row.createCell(11).setCellValue("personAddress1");
+//	    row.createCell(12).setCellValue("personAddress2");
+//	    row.createCell(13).setCellValue("personAddress3");
+//	    row.createCell(14).setCellValue("personPincode");
+//	    row.createCell(15).setCellValue("personCity");
+//	    row.createCell(16).setCellValue("personState");
+//	    row.createCell(17).setCellValue("status");
+//	    row.createCell(18).setCellValue("personMobileNo");
+//	    row.createCell(19).setCellValue("createdAt");
+//	    row.createCell(20).setCellValue("updatedAt");
+//	    row.createCell(21).setCellValue("personTilte");
+
+//	    int dataRowIndex = 1;
+//
+//	    for (PersonalDetailsEntity personalDetailsEntity : getalldata) {
+//	    	
+//	        XSSFRow dataRow = sheet.createRow(dataRowIndex);
+//
+//	        dataRow.createCell(0).setCellValue(personalDetailsEntity.getPersonId());
+//	        dataRow.createCell(1).setCellValue(personalDetailsEntity.getPersonFirstName());
+//	        dataRow.createCell(2).setCellValue(personalDetailsEntity.getPersonMiddleName());
+//	        dataRow.createCell(3).setCellValue(personalDetailsEntity.getPersonLastName());
+//	        dataRow.createCell(4).setCellValue(personalDetailsEntity.getPersonGender().toString());
+//	        dataRow.createCell(5).setCellValue(String.valueOf(personalDetailsEntity.getPersonDateOfBirth()));
+//	        dataRow.createCell(6).setCellValue(personalDetailsEntity.getPersonPanNumber());
+//	        dataRow.createCell(7).setCellValue(personalDetailsEntity.getPersonAadhaarNumber());
+//	        dataRow.createCell(8).setCellValue(personalDetailsEntity.getPersonMaritalStatus().toString());
+//	        dataRow.createCell(9).setCellValue(personalDetailsEntity.getPersonEmail());
+//	        dataRow.createCell(10).setCellValue(personalDetailsEntity.getPersonAlternateMobileNo());
+//	        dataRow.createCell(11).setCellValue(personalDetailsEntity.getPersonAddress1());
+//	        dataRow.createCell(12).setCellValue(personalDetailsEntity.getPersonAddress2());
+//	        dataRow.createCell(13).setCellValue(personalDetailsEntity.getPersonAddress3());
+//	        dataRow.createCell(14).setCellValue(personalDetailsEntity.getPersonPincode());
+//	        dataRow.createCell(15).setCellValue(personalDetailsEntity.getPersonCity());
+//	        dataRow.createCell(16).setCellValue(personalDetailsEntity.getPersonState());
+//	        dataRow.createCell(17).setCellValue(personalDetailsEntity.getStatus());
+//	        dataRow.createCell(18).setCellValue(personalDetailsEntity.getPersonMobileNo());
+//	        dataRow.createCell(19).setCellValue(personalDetailsEntity.getCreatedAt().toString());
+//	        dataRow.createCell(20).setCellValue(personalDetailsEntity.getUpdatedAt().toString());
+//	        dataRow.createCell(21).setCellValue(personalDetailsEntity.getPersonTilte().toString());
+//
+//	        dataRowIndex++;
+//	    }
+
+//	    String folderPath = "C:\\Users\\HP\\Downloads";
+//	    File folder = new File(folderPath);
+//	    if (!folder.exists()) {
+//	        folder.mkdirs();
+//	    }
+//
+//	    try (FileOutputStream out = new FileOutputStream(folderPath + "proposal.xls")) {
+//	        workbook.write(out);
+//	    }
+//	    workbook.close();
+//	}
+	
+	
 	
 	@Override
-	public void generateExcel(HttpServletResponse response) throws IOException {
-		
-		List<PersonalDetailsEntity> getalldata = personalDetailsRepository.findAll();
-		
-		HSSFWorkbook workbook = new HSSFWorkbook();
-		HSSFSheet sheet = workbook.createSheet("Proposal Info");
-		HSSFRow row = sheet.createRow(0);
-		
-		row.createCell(0).setCellValue("personId");
-		row.createCell(1).setCellValue("personFirstName");
-		row.createCell(2).setCellValue("personMiddleName");
-		row.createCell(3).setCellValue("personLastName");
-		row.createCell(4).setCellValue("personGender");
-		row.createCell(5).setCellValue("personDateOfBirth");
-		row.createCell(6).setCellValue("personPanNumber");
-		row.createCell(7).setCellValue("personAadhaarNumber");
-		row.createCell(8).setCellValue("personMaritalStatus");
-		row.createCell(9).setCellValue("personEmail");
-		row.createCell(10).setCellValue("personAlternateMobileNo");
-		row.createCell(11).setCellValue("personAddress1");
-		row.createCell(12).setCellValue("personAddress2");
-		row.createCell(13).setCellValue("personAddress3");
-		row.createCell(14).setCellValue("personPincode");
-		row.createCell(15).setCellValue("personCity");
-		row.createCell(16).setCellValue("personState");
-		row.createCell(17).setCellValue("status");
-		row.createCell(18).setCellValue("personMobileNo");
-		
-		int dataRowIndex = 1;
-		
-		for(PersonalDetailsEntity personalDetailsEntity : getalldata) {
-			HSSFRow dataRow = sheet.createRow(dataRowIndex);
-			
-			dataRow.createCell(0).setCellValue(personalDetailsEntity.getPersonId());
-			dataRow.createCell(1).setCellValue(personalDetailsEntity.getPersonFirstName());
-			dataRow.createCell(2).setCellValue(personalDetailsEntity.getPersonMiddleName());
-			dataRow.createCell(3).setCellValue(personalDetailsEntity.getPersonLastName());
-			dataRow.createCell(4).setCellValue(personalDetailsEntity.getPersonGender().toString());
-			dataRow.createCell(5).setCellValue(personalDetailsEntity.getPersonDateOfBirth());
-			dataRow.createCell(6).setCellValue(personalDetailsEntity.getPersonPanNumber());
-			dataRow.createCell(7).setCellValue(personalDetailsEntity.getPersonAadhaarNumber());
-			dataRow.createCell(8).setCellValue(personalDetailsEntity.getPersonMaritalStatus().toString());
-			dataRow.createCell(9).setCellValue(personalDetailsEntity.getPersonEmail());
-			dataRow.createCell(10).setCellValue(personalDetailsEntity.getPersonAlternateMobileNo());
-			dataRow.createCell(11).setCellValue(personalDetailsEntity.getPersonAddress1());
-			dataRow.createCell(12).setCellValue(personalDetailsEntity.getPersonAddress2());
-			dataRow.createCell(13).setCellValue(personalDetailsEntity.getPersonAddress3());
-			dataRow.createCell(14).setCellValue(personalDetailsEntity.getPersonPincode());
-			dataRow.createCell(15).setCellValue(personalDetailsEntity.getPersonCity());
-			dataRow.createCell(16).setCellValue(personalDetailsEntity.getPersonState());
-			dataRow.createCell(17).setCellValue(personalDetailsEntity.getStatus());
-			dataRow.createCell(18).setCellValue(personalDetailsEntity.getPersonMobileNo());
-			
-			dataRowIndex ++;
-			
-		
-			
-			
-		}
-		
-		ServletOutputStream ops = response.getOutputStream();
-		workbook.write(ops);
-		workbook.close();
-		ops.close();
-		
-		
-	}
+	public String generateExcel() throws IOException {
+	
+
+	    List<PersonalDetailsEntity> getalldata = personalDetailsRepository.findAll();
+
+	    XSSFWorkbook workbook = new XSSFWorkbook();
+	    XSSFSheet sheet = workbook.createSheet("Proposal Info");
+	    XSSFRow row = sheet.createRow(0);
+
+
+//	    row.createCell(0).setCellValue("personId");
+	    row.createCell(1).setCellValue("personFirstName");
+	    row.createCell(2).setCellValue("personMiddleName");
+	    row.createCell(3).setCellValue("personLastName");
+	    row.createCell(4).setCellValue("personGender");
+	    row.createCell(5).setCellValue("personDateOfBirth");
+	    row.createCell(6).setCellValue("personPanNumber");
+	    row.createCell(7).setCellValue("personAadhaarNumber");
+	    row.createCell(8).setCellValue("personMaritalStatus");
+	    row.createCell(9).setCellValue("personEmail");
+	    row.createCell(10).setCellValue("personAlternateMobileNo");
+	    row.createCell(11).setCellValue("personAddress1");
+	    row.createCell(12).setCellValue("personAddress2");
+	    row.createCell(13).setCellValue("personAddress3");
+	    row.createCell(14).setCellValue("personPincode");
+	    row.createCell(15).setCellValue("personCity");
+	    row.createCell(16).setCellValue("personState");
+//	    row.createCell(17).setCellValue("status");
+	    row.createCell(17).setCellValue("personMobileNo");
+//	    row.createCell(19).setCellValue("createdAt");
+//	    row.createCell(20).setCellValue("updatedAt");
+	    row.createCell(18).setCellValue("personTitle");
 
 	
+
+	    String folderPath = "C:\\Users\\HP\\Downloads\\";
+	    
+	    String shortUUID = UUID.randomUUID().toString().substring(0, 8);
+	    
+	    String filePath = folderPath + shortUUID + "Proposal.xlsx";
+
+	    
+	    try (FileOutputStream out = new FileOutputStream(filePath)) {
+	        workbook.write(out);
+	    }
+	    
+	    workbook.close();
+
+	    return filePath;
+	}
+
+
+//======================================================== Import Excel  ===================================================================================
+	
+	@Override
+	public String savedatafromexcel(MultipartFile file) throws IOException {
+
+	    List<PersonalDetailsEntity> list = new ArrayList<>();
+
+	    try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
+	        XSSFSheet sheet = workbook.getSheetAt(0);
+
+	        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+	            XSSFRow row = sheet.getRow(i);
+	            if (row == null) continue;
+
+	            PersonalDetailsEntity detailsEntity = new PersonalDetailsEntity();
+
+	            detailsEntity.setPersonFirstName(row.getCell(1).getStringCellValue());
+	            detailsEntity.setPersonMiddleName(row.getCell(2).getStringCellValue());
+	            detailsEntity.setPersonLastName(row.getCell(3).getStringCellValue());
+	            detailsEntity.setPersonGender(Gender.valueOf(row.getCell(4).getStringCellValue()));
+	            detailsEntity.setPersonDateOfBirth(row.getCell(5).getDateCellValue());
+	            detailsEntity.setPersonPanNumber(row.getCell(6).getStringCellValue());
+	            detailsEntity.setPersonAadhaarNumber((long) row.getCell(7).getNumericCellValue());
+	            detailsEntity.setPersonMaritalStatus(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()));
+	            detailsEntity.setPersonEmail(row.getCell(9).getStringCellValue());
+	            detailsEntity.setPersonAlternateMobileNo((long) row.getCell(10).getNumericCellValue());
+	            detailsEntity.setPersonAddress1(row.getCell(11).getStringCellValue());
+	            detailsEntity.setPersonAddress2(row.getCell(12).getStringCellValue());
+	            detailsEntity.setPersonAddress3(row.getCell(13).getStringCellValue());
+	            detailsEntity.setPersonPincode((long) row.getCell(14).getNumericCellValue());
+	            detailsEntity.setPersonCity(row.getCell(15).getStringCellValue());
+	            detailsEntity.setPersonState(row.getCell(16).getStringCellValue());
+	            detailsEntity.setPersonMobileNo((long) row.getCell(17).getNumericCellValue());
+	            detailsEntity.setPersonTilte(Title.valueOf(row.getCell(18).getStringCellValue()));
+
+	            list.add(detailsEntity);
+	        }
+	    }
+
+	    personalDetailsRepository.saveAll(list);
+	    return "Added Succesfully";
+	}
+
+
 
 }

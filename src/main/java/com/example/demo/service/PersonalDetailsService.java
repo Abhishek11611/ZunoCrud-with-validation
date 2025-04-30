@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.pagination.PersonalDetailsSearch;
@@ -28,6 +30,10 @@ public interface PersonalDetailsService {
 	
 	public List<PersonalDetailsEntity> fetchAllByStringbuilder(PersonalDetailsListing personalDetailsListing);
 	
-	public void generateExcel(HttpServletResponse response) throws IOException;
+//	public void generateExcel(HttpServletResponse response) throws IOException;
+	
+	public String generateExcel() throws IOException;
+	
+	public String savedatafromexcel(MultipartFile file) throws IOException;
 
 }
