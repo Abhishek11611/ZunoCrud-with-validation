@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.entity.ErrorTable;
 import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.entity.PersonalDetailsEntity;
 import com.example.demo.enums.Gender;
@@ -21,6 +23,7 @@ import com.example.demo.enums.MaritalStatus;
 import com.example.demo.enums.Title;
 import com.example.demo.pagination.PersonalDetailsListing;
 import com.example.demo.pagination.PersonalDetailsSearch;
+import com.example.demo.repository.ErrorTableRepository;
 import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
 import com.example.demo.requestdto.NomineeRequestDto;
@@ -40,6 +43,9 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	
 	@Autowired
 	private EntityManager entityManager;
+	
+	@Autowired
+	private ErrorTableRepository errorTableRepository;
 	
 //================================================= Add proposal ===========================================================================
 	@Override
@@ -772,33 +778,149 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	            XSSFRow row = sheet.getRow(i);
 	            if (row == null) continue;
 
+	            List<String> errors = new ArrayList<>();
 	            PersonalDetailsEntity detailsEntity = new PersonalDetailsEntity();
 
-	            detailsEntity.setPersonFirstName(row.getCell(1).getStringCellValue());
-	            detailsEntity.setPersonMiddleName(row.getCell(2).getStringCellValue());
-	            detailsEntity.setPersonLastName(row.getCell(3).getStringCellValue());
-	            detailsEntity.setPersonGender(Gender.valueOf(row.getCell(4).getStringCellValue()));
-	            detailsEntity.setPersonDateOfBirth(row.getCell(5).getDateCellValue());
-	            detailsEntity.setPersonPanNumber(row.getCell(6).getStringCellValue());
-	            detailsEntity.setPersonAadhaarNumber((long) row.getCell(7).getNumericCellValue());
-	            detailsEntity.setPersonMaritalStatus(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()));
-	            detailsEntity.setPersonEmail(row.getCell(9).getStringCellValue());
-	            detailsEntity.setPersonAlternateMobileNo((long) row.getCell(10).getNumericCellValue());
-	            detailsEntity.setPersonAddress1(row.getCell(11).getStringCellValue());
-	            detailsEntity.setPersonAddress2(row.getCell(12).getStringCellValue());
-	            detailsEntity.setPersonAddress3(row.getCell(13).getStringCellValue());
-	            detailsEntity.setPersonPincode((long) row.getCell(14).getNumericCellValue());
-	            detailsEntity.setPersonCity(row.getCell(15).getStringCellValue());
-	            detailsEntity.setPersonState(row.getCell(16).getStringCellValue());
-	            detailsEntity.setPersonMobileNo((long) row.getCell(17).getNumericCellValue());
-	            detailsEntity.setPersonTilte(Title.valueOf(row.getCell(18).getStringCellValue()));
+	            if (row.getCell(1) == null || row.getCell(1).getStringCellValue().trim().isEmpty()) {
+	                errors.add("FirstName is Empty");
+	            }
 
-	            list.add(detailsEntity);
+	            
+	            if (row.getCell(2) == null || row.getCell(2).getStringCellValue().trim().isEmpty()) {
+	                errors.add("MiddleName is Empty");
+	            }
+
+	         
+	            if (row.getCell(3) == null || row.getCell(3).getStringCellValue().trim().isEmpty()) {
+	                errors.add("LastName is Empty");
+	            }
+
+	        
+	            try {
+	                Gender.valueOf(row.getCell(4).getStringCellValue().trim());
+	            } catch (Exception e) {
+	                errors.add("Invalid or Empty Gender");
+	            }
+
+	        
+	            if (row.getCell(5) == null || row.getCell(5).getCellType() != CellType.NUMERIC) {
+	                errors.add("DateOfBirth is Empty or Invalid");
+	            }
+
+	         
+	            if (row.getCell(6) == null || row.getCell(6).getStringCellValue().trim().isEmpty()) {
+	                errors.add("Pancard is Empty");
+	            }
+
+	          
+	            if (row.getCell(7) == null || row.getCell(7).getCellType() != CellType.NUMERIC || row.getCell(7).getNumericCellValue() == 0) {
+	                errors.add("AadhaarCard is Empty or Invalid");
+	            }
+
+	       
+	            try {
+	                MaritalStatus.valueOf(row.getCell(8).getStringCellValue().trim());
+	            } catch (Exception e) {
+	                errors.add("Invalid or Empty MaritalStatus");
+	            }
+
+	        
+	            if (row.getCell(9) == null || row.getCell(9).getStringCellValue().trim().isEmpty()) {
+	                errors.add("Email is Empty");
+	            }
+
+	         
+	            if (row.getCell(10) == null || row.getCell(10).getCellType() != CellType.NUMERIC || row.getCell(10).getNumericCellValue() == 0) {
+	                errors.add("Alternate Mobile Number is empty or invalid");
+	            }
+
+	           
+	            if (row.getCell(11) == null || row.getCell(11).getStringCellValue().trim().isEmpty()) {
+	                errors.add("Address1 is Empty");
+	            }
+
+	        
+	            if (row.getCell(12) == null || row.getCell(12).getStringCellValue().trim().isEmpty()) {
+	                errors.add("Address2 is Empty");
+	            }
+
+	            if (row.getCell(13) == null || row.getCell(13).getStringCellValue().trim().isEmpty()) {
+	                errors.add("Address3 is Empty");
+	            }
+
+	           
+	            if (row.getCell(14) == null || row.getCell(14).getCellType() != CellType.NUMERIC || row.getCell(14).getNumericCellValue() == 0) {
+	                errors.add("Pincode is Empty or Invalid");
+	            }
+
+	        
+	            if (row.getCell(15) == null || row.getCell(15).getStringCellValue().trim().isEmpty()) {
+	                errors.add("City is Empty");
+	            }
+	          
+	            if (row.getCell(16) == null || row.getCell(16).getStringCellValue().trim().isEmpty()) {
+	                errors.add("State is Empty");
+	            }
+
+	           
+	            if (row.getCell(17) == null || row.getCell(17).getCellType() != CellType.NUMERIC || row.getCell(17).getNumericCellValue() == 0) {
+	                errors.add("Mobile number is empty or invalid");
+	            }
+
+	        
+	            try {
+	                Title.valueOf(row.getCell(18).getStringCellValue().trim());
+	            } catch (Exception e) {
+	                errors.add("Invalid or Empty Title");
+	            }
+
+	           
+	            if (!errors.isEmpty()) {
+	                ErrorTable errorTable = new ErrorTable();
+	                errorTable.setError("Row "+i);
+	                errorTable.setErrorField(String.join(", ", errors));
+	                errorTable.setStatus("Fail");
+	                errorTableRepository.save(errorTable);
+	                
+	                
+	                
+	            } else {
+	                detailsEntity.setPersonFirstName(row.getCell(1).getStringCellValue());
+	                detailsEntity.setPersonMiddleName(row.getCell(2).getStringCellValue());
+	                detailsEntity.setPersonLastName(row.getCell(3).getStringCellValue());
+	                detailsEntity.setPersonGender(Gender.valueOf(row.getCell(4).getStringCellValue()));
+	                detailsEntity.setPersonDateOfBirth(row.getCell(5).getDateCellValue());
+	                detailsEntity.setPersonPanNumber(row.getCell(6).getStringCellValue());
+	                detailsEntity.setPersonAadhaarNumber((long) row.getCell(7).getNumericCellValue());
+	                detailsEntity.setPersonMaritalStatus(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()));
+	                detailsEntity.setPersonEmail(row.getCell(9).getStringCellValue());
+	                detailsEntity.setPersonAlternateMobileNo((long) row.getCell(10).getNumericCellValue());
+	                detailsEntity.setPersonAddress1(row.getCell(11).getStringCellValue());
+	                detailsEntity.setPersonAddress2(row.getCell(12).getStringCellValue());
+	                detailsEntity.setPersonAddress3(row.getCell(13).getStringCellValue());
+	                detailsEntity.setPersonPincode((long) row.getCell(14).getNumericCellValue());
+	                detailsEntity.setPersonCity(row.getCell(15).getStringCellValue());
+	                detailsEntity.setPersonState(row.getCell(16).getStringCellValue());
+	                detailsEntity.setPersonMobileNo((long) row.getCell(17).getNumericCellValue());
+	                detailsEntity.setPersonTilte(Title.valueOf(row.getCell(18).getStringCellValue()));
+	                
+	                PersonalDetailsEntity save = personalDetailsRepository.save(detailsEntity);
+
+//	                list.add(detailsEntity);
+	                
+	                
+	                ErrorTable errorTable = new ErrorTable();
+	                errorTable.setError(save.getPersonId()+"");
+	                errorTable.setErrorField(String.join(", ", errors));
+	                errorTable.setStatus("Success");
+	                errorTableRepository.save(errorTable);
+	            }
 	        }
 	    }
 
-	    personalDetailsRepository.saveAll(list);
-	    return "Added Succesfully";
+	  
+//	    personalDetailsRepository.saveAll(list);
+	    return "Added Successfully";
 	}
 
 
