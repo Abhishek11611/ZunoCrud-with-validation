@@ -176,50 +176,46 @@ public class PersonalDetailsController {
 //	    personalDetailsService.generateExcel(response);
 //	}
 	
-	
 	@GetMapping("/exportexcel")
 	public ResponseHandler generateExcelReport(HttpServletResponse response) {
 
-	    ResponseHandler responses = new ResponseHandler();
+		ResponseHandler responses = new ResponseHandler();
 
-	    try {
-	    	 String filePath = personalDetailsService.generateExcel();
+		try {
+			String filePath = personalDetailsService.generateExcel();
 
-	        responses.setStatus(true);
-	        responses.setMessage("Excel exported successfully");
-	        responses.setData(filePath);
+			responses.setStatus(true);
+			responses.setMessage("Excel exported successfully");
+			responses.setData(filePath);
 
-	    } catch (Exception e) {
-	        responses.setStatus(false);
-	        responses.setMessage("Excel export failed: " + e.getMessage());
-	        responses.setData(null);
-	    }
+		} catch (Exception e) {
+			responses.setStatus(false);
+			responses.setMessage("Excel export failed: " + e.getMessage());
+			responses.setData(null);
+		}
 
-	    return responses;
+		return responses;
 	}
-	
-	
+
 //	================================================== Import Excel ===================================================
 
 	@PostMapping(value = "/uploadexcel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	
+
 	public ResponseHandler uploadExcelFile(@RequestParam("file") MultipartFile file) {
-	    ResponseHandler response = new ResponseHandler();
-	    try {
-	        personalDetailsService.savedatafromexcel(file);
-	        response.setStatus(true);
-	        response.setMessage("Excel data saved successfully");
-	        response.setData(null);
-	    } catch (Exception e) {
-	        response.setStatus(false);
-	        response.setMessage("Failed to upload Excel: " + e.getMessage());
-	        response.setData(null);
-	    }
-	    return response;
+		
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			personalDetailsService.savedatafromexcel(file);
+			response.setStatus(true);
+			response.setMessage("Excel data saved successfully");
+			response.setData(null);
+		} catch (Exception e) {
+			response.setStatus(false);
+			response.setMessage("Failed to upload Excel: " + e.getMessage());
+			response.setData(null);
+		}
+		return response;
 	}
-
-
-	
-
 
 }
