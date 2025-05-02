@@ -595,7 +595,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			nomidto.setNomineeRelationship(existingnominee.getNomineeRelationship());
 			nomidto.setNomineeDateOfBirth(existingnominee.getNomineeDateOfBirth());
 			nomidto.setNomineeGender(existingnominee.getNomineeGender());
-			nomidto.setPersonId(personId);
+			nomidto.setPersonId(proposerId);
 			
 			
 			
@@ -715,7 +715,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	public String generateExcel() throws IOException {
 	
 
-	    List<PersonalDetailsEntity> getalldata = personalDetailsRepository.findAll();
+//	    List<PersonalDetailsEntity> getalldata = personalDetailsRepository.findAll();
 
 	    XSSFWorkbook workbook = new XSSFWorkbook();
 	    XSSFSheet sheet = workbook.createSheet("Proposal Info");
@@ -769,7 +769,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	@Override
 	public String savedatafromexcel(MultipartFile file) throws IOException {
 
-	    List<PersonalDetailsEntity> list = new ArrayList<>();
+//	    List<PersonalDetailsEntity> list = new ArrayList<>();
 
 	    try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
 	        XSSFSheet sheet = workbook.getSheetAt(0);
@@ -779,108 +779,130 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	            if (row == null) continue;
 
 	            List<String> errors = new ArrayList<>();
+	            List<String> errorsField = new ArrayList<>();
+	            
 	            PersonalDetailsEntity detailsEntity = new PersonalDetailsEntity();
 
-	            if (row.getCell(1) == null || row.getCell(1).getStringCellValue().trim().isEmpty()) {
+	            if (row.getCell(1) == null || row.getCell(1).getStringCellValue().isEmpty()) {
 	                errors.add("FirstName is Empty");
+	                errorsField.add("FirstName");
 	            }
 
 	            
-	            if (row.getCell(2) == null || row.getCell(2).getStringCellValue().trim().isEmpty()) {
+	            if (row.getCell(2) == null || row.getCell(2).getStringCellValue().isEmpty()) {
 	                errors.add("MiddleName is Empty");
+	                errorsField.add("MiddleName");
 	            }
 
 	         
-	            if (row.getCell(3) == null || row.getCell(3).getStringCellValue().trim().isEmpty()) {
+	            if (row.getCell(3) == null || row.getCell(3).getStringCellValue().isEmpty()) {
 	                errors.add("LastName is Empty");
+	                errorsField.add("LastName");
 	            }
-
-	        
-	            try {
-	                Gender.valueOf(row.getCell(4).getStringCellValue().trim());
-	            } catch (Exception e) {
-	                errors.add("Invalid or Empty Gender");
+	            
+	            if(Gender.valueOf(row.getCell(4).getStringCellValue()) == null || Gender.valueOf(row.getCell(4).getStringCellValue()).toString().isEmpty()) {
+	            	 errors.add(" Gender is Empty");
+	            	 errorsField.add("Gender");
 	            }
 
 	        
 	            if (row.getCell(5) == null || row.getCell(5).getCellType() != CellType.NUMERIC) {
-	                errors.add("DateOfBirth is Empty or Invalid");
+	                errors.add("DateOfBirth is Empty");
+	                errorsField.add("DateOfBirth");
 	            }
 
-	         
-	            if (row.getCell(6) == null || row.getCell(6).getStringCellValue().trim().isEmpty()) {
+	            
+	            if (row.getCell(6) == null || row.getCell(6).getStringCellValue().isEmpty() || !row.getCell(6).getStringCellValue().matches("[A-Z]{5}[0-9]{4}[A-Z]{1}") ) {
 	                errors.add("Pancard is Empty");
+	                errorsField.add("Pancard");
+	            }else if(personalDetailsRepository.existsByPersonPanNumber(row.getCell(6).getStringCellValue())) {
+	            	errors.add("PanCard Already Existing");  errorsField.add("Pancard");
 	            }
 
+	            Long addhar= (long) row.getCell(7).getNumericCellValue();
 	          
-	            if (row.getCell(7) == null || row.getCell(7).getCellType() != CellType.NUMERIC || row.getCell(7).getNumericCellValue() == 0) {
-	                errors.add("AadhaarCard is Empty or Invalid");
-	            }
-
-	       
-	            try {
-	                MaritalStatus.valueOf(row.getCell(8).getStringCellValue().trim());
-	            } catch (Exception e) {
-	                errors.add("Invalid or Empty MaritalStatus");
+	            if (row.getCell(7) == null || row.getCell(7).getCellType() != CellType.NUMERIC ) {
+	                errors.add("AadhaarCard is Empty");
+	                errorsField.add("AadhaarCard");
+	            } else if (addhar.toString().length()!=12) {
+	            	 errors.add("AadhaarCard Must be 12 digit");
+		                errorsField.add("AadhaarCard");
+	            }      
+	            
+	            if(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()) == null || MaritalStatus.valueOf(row.getCell(8).getStringCellValue()).toString().isEmpty()) {
+	            	 errors.add("Invalid or Empty MaritalStatus");
+	            	 errorsField.add("MaritalStatus");
 	            }
 
 	        
-	            if (row.getCell(9) == null || row.getCell(9).getStringCellValue().trim().isEmpty()) {
+	            if (row.getCell(9) == null || row.getCell(9).getStringCellValue().isEmpty()) {
 	                errors.add("Email is Empty");
+	                errorsField.add("Email");
+	            }
+	            else if(personalDetailsRepository.existsByPersonEmail(row.getCell(9).getStringCellValue())) {
+	            	errors.add("Email Already Existing"); errorsField.add("Email");
 	            }
 
 	         
 	            if (row.getCell(10) == null || row.getCell(10).getCellType() != CellType.NUMERIC || row.getCell(10).getNumericCellValue() == 0) {
-	                errors.add("Alternate Mobile Number is empty or invalid");
+	                errors.add("Alternate Mobile Number is empty or invalid"); errorsField.add("Alternate Mobile Number");
+	            }else if(personalDetailsRepository.existsByPersonMobileNo((long)row.getCell(10).getNumericCellValue())) {
+	            	errors.add("Mobile Number Already Existing"); errorsField.add("Alternate Mobile Number");
 	            }
 
 	           
-	            if (row.getCell(11) == null || row.getCell(11).getStringCellValue().trim().isEmpty()) {
-	                errors.add("Address1 is Empty");
+	            if (row.getCell(11) == null || row.getCell(11).getStringCellValue().isEmpty()) {
+	                errors.add("Address1 is Empty"); errorsField.add("Address1");
 	            }
 
 	        
-	            if (row.getCell(12) == null || row.getCell(12).getStringCellValue().trim().isEmpty()) {
-	                errors.add("Address2 is Empty");
+	            if (row.getCell(12) == null || row.getCell(12).getStringCellValue().isEmpty()) {
+	                errors.add("Address2 is Empty"); errorsField.add("Address2");
 	            }
 
-	            if (row.getCell(13) == null || row.getCell(13).getStringCellValue().trim().isEmpty()) {
-	                errors.add("Address3 is Empty");
+	            if (row.getCell(13) == null || row.getCell(13).getStringCellValue().isEmpty()) {
+	                errors.add("Address3 is Empty"); errorsField.add("Address3");
 	            }
 
 	           
 	            if (row.getCell(14) == null || row.getCell(14).getCellType() != CellType.NUMERIC || row.getCell(14).getNumericCellValue() == 0) {
-	                errors.add("Pincode is Empty or Invalid");
+	                errors.add("Pincode is Empty or Invalid"); errorsField.add("Pincode");
 	            }
 
 	        
-	            if (row.getCell(15) == null || row.getCell(15).getStringCellValue().trim().isEmpty()) {
-	                errors.add("City is Empty");
+	            if (row.getCell(15) == null || row.getCell(15).getStringCellValue().isEmpty()) {
+	                errors.add("City is Empty"); errorsField.add("City");
 	            }
 	          
-	            if (row.getCell(16) == null || row.getCell(16).getStringCellValue().trim().isEmpty()) {
-	                errors.add("State is Empty");
+	            if (row.getCell(16) == null || row.getCell(16).getStringCellValue().isEmpty()) {
+	                errors.add("State is Empty"); errorsField.add("State");
 	            }
 
+	           Long number1 =(long)row.getCell(17).getNumericCellValue();
 	           
 	            if (row.getCell(17) == null || row.getCell(17).getCellType() != CellType.NUMERIC || row.getCell(17).getNumericCellValue() == 0) {
-	                errors.add("Mobile number is empty or invalid");
+	                errors.add("Mobile number is empty or invalid"); errorsField.add("Mobile number");
+	            }else if(number1.toString().length()!=10) {
+	            	errors.add("Mobile number Must be 10 digit"); errorsField.add("Mobile number");
 	            }
 
-	        
-	            try {
-	                Title.valueOf(row.getCell(18).getStringCellValue().trim());
-	            } catch (Exception e) {
-	                errors.add("Invalid or Empty Title");
+	            if(Title.valueOf(row.getCell(18).getStringCellValue()) == null || Title.valueOf(row.getCell(18).getStringCellValue()).toString().isEmpty()) {
+	            	errors.add("Invalid or Empty Title"); errorsField.add("Title");
 	            }
 
 	           
 	            if (!errors.isEmpty()) {
-	                ErrorTable errorTable = new ErrorTable();
-	                errorTable.setError("Row "+i);
-	                errorTable.setErrorField(String.join(", ", errors));
-	                errorTable.setStatus("Fail");
-	                errorTableRepository.save(errorTable);
+	            	int k=0;
+	            	for (String eros : errors) {
+	            		
+		                ErrorTable errorTable = new ErrorTable();
+		                errorTable.setError(eros);
+		                errorTable.setErrorField(errorsField.get(k));
+		                errorTable.setStatus("Fail");
+		                errorTable.setErrorRow("Row "+i);
+		                errorTableRepository.save(errorTable);
+						k++;
+					}
 	                
 	                
 	                
@@ -908,11 +930,11 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 //	                list.add(detailsEntity);
 	                
-	                
 	                ErrorTable errorTable = new ErrorTable();
 	                errorTable.setError(save.getPersonId()+"");
 	                errorTable.setErrorField(String.join(", ", errors));
 	                errorTable.setStatus("Success");
+	                errorTable.setErrorRow("Row "+i);
 	                errorTableRepository.save(errorTable);
 	            }
 	        }
@@ -922,6 +944,8 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 //	    personalDetailsRepository.saveAll(list);
 	    return "Added Successfully";
 	}
+	
+
 
 
 

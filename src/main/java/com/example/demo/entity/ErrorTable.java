@@ -16,6 +16,7 @@ public class ErrorTable {
 	private String status;
 	private String error;
 	private String errorField;
+	private String errorRow;
 	
 	public ErrorTable() {
 		// TODO Auto-generated constructor stub
@@ -25,6 +26,16 @@ public class ErrorTable {
 	public String toString() {
 		return "ErrorTable [errorId=" + errorId + ", status=" + status + ", error=" + error + ", errorField="
 				+ errorField + "]";
+	}
+	
+	
+
+	public String getErrorRow() {
+		return errorRow;
+	}
+
+	public void setErrorRow(String errorRow) {
+		this.errorRow = errorRow;
 	}
 
 	public Integer getErrorId() {
