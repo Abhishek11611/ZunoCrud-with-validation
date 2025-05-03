@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -769,10 +770,20 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	@Override
 	public String savedatafromexcel(MultipartFile file) throws IOException {
 
-//	    List<PersonalDetailsEntity> list = new ArrayList<>();
+		
 
-	    try (XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream())) {
+	    XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
 	        XSSFSheet sheet = workbook.getSheetAt(0);
+	        
+			XSSFWorkbook workbooks = new XSSFWorkbook();
+			XSSFSheet exportsheets = workbooks.createSheet("Error Info");
+			XSSFRow rows = exportsheets.createRow(0);
+	 	     rows.createCell(0).setCellValue("error id");
+			rows.createCell(1).setCellValue("error");
+			rows.createCell(2).setCellValue("error field");
+			rows.createCell(3).setCellValue("error row");
+			rows.createCell(4).setCellValue("status");
+			int RowIndex = 1;
 
 	        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 	            XSSFRow row = sheet.getRow(i);
@@ -800,11 +811,17 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	                errorsField.add("LastName");
 	            }
 	            
-	            if(Gender.valueOf(row.getCell(4).getStringCellValue()) == null || Gender.valueOf(row.getCell(4).getStringCellValue()).toString().isEmpty()) {
-	            	 errors.add(" Gender is Empty");
-	            	 errorsField.add("Gender");
+//	            if(Gender.valueOf(row.getCell(4).getStringCellValue()) == null || Gender.valueOf(row.getCell(4).getStringCellValue()).toString().isEmpty()) {
+//	            	 errors.add(" Gender is Empty");
+//	            	 errorsField.add("Gender");
+//	            }
+	            
+	            try {
+	            	Gender.valueOf(row.getCell(4).getStringCellValue());
+	            } catch (Exception e) {
+	            	errors.add("Invalid or Empty Gender");
+	            	errorsField.add("Gender");
 	            }
-
 	        
 	            if (row.getCell(5) == null || row.getCell(5).getCellType() != CellType.NUMERIC) {
 	                errors.add("DateOfBirth is Empty");
@@ -890,18 +907,27 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	            	errors.add("Invalid or Empty Title"); errorsField.add("Title");
 	            }
 
-	           
-	            if (!errors.isEmpty()) {
-	            	int k=0;
-	            	for (String eros : errors) {
-	            		
-		                ErrorTable errorTable = new ErrorTable();
-		                errorTable.setError(eros);
-		                errorTable.setErrorField(errorsField.get(k));
-		                errorTable.setStatus("Fail");
-		                errorTable.setErrorRow("Row "+i);
-		                errorTableRepository.save(errorTable);
+				if (!errors.isEmpty()) {
+					int k = 0;
+					for (String eros : errors) {
+
+						ErrorTable errorTable = new ErrorTable();
+						errorTable.setError(eros);
+						errorTable.setErrorField(errorsField.get(k));
+						errorTable.setStatus("Fail");
+						errorTable.setErrorRow("Row " + i);
+						ErrorTable saves = errorTableRepository.save(errorTable);
+						XSSFRow dataRows = exportsheets.createRow(RowIndex);
+						
+						dataRows.createCell(0).setCellValue(saves.getErrorId());
+						dataRows.createCell(1).setCellValue(eros);
+						dataRows.createCell(2).setCellValue(errorsField.get(k));
+						dataRows.createCell(3).setCellValue("Row " + i);
+						dataRows.createCell(4).setCellValue("Fail");
+						RowIndex++;
+						
 						k++;
+
 					}
 	                
 	                
@@ -936,16 +962,40 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	                errorTable.setStatus("Success");
 	                errorTable.setErrorRow("Row "+i);
 	                errorTableRepository.save(errorTable);
+	                
+	                
+	                XSSFRow dataRows = exportsheets.createRow(RowIndex);
+        	        
+	                
+	                 dataRows.createCell(1).setCellValue(save.getPersonId()+"");  
+	                 dataRows.createCell(2).setCellValue("");  
+	                 dataRows.createCell(3).setCellValue("Row "+i);  
+	                 dataRows.createCell(4).setCellValue("Success"); 
+	                 RowIndex++;
 	            }
 	        }
-	    }
+	    
+			
+			String folderPaths = "C:\\Users\\HP\\Downloads\\";
+
+			String shortUUID = UUID.randomUUID().toString().substring(0, 8);
+
+			String filePaths = folderPaths + shortUUID + "Proposals.xlsx";
+
+			FileOutputStream outs = new FileOutputStream(filePaths);
+			workbooks.write(outs);
+			
+			outs.close();
+			workbooks.close();
+		
+			workbook.close();
+		
 
 	  
 //	    personalDetailsRepository.saveAll(list);
 	    return "Added Successfully";
 	}
 	
-
 
 
 

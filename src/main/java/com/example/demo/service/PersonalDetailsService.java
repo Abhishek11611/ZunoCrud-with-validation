@@ -36,5 +36,4 @@ public interface PersonalDetailsService {
 	
 	public String savedatafromexcel(MultipartFile file) throws IOException;
 	
-
 }
