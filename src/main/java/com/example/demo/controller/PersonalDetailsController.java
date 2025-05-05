@@ -32,7 +32,7 @@ public class PersonalDetailsController {
 	@Autowired
 	private PersonalDetailsService personalDetailsService;
 
-	@PostMapping("/add-person")
+	@PostMapping("/add")
 	public ResponseHandler addperson(@RequestBody PdRequestDto pdRequestDto) {
 
 		ResponseHandler response = new ResponseHandler();
@@ -60,7 +60,7 @@ public class PersonalDetailsController {
 		return response;
 	}
 
-	@PostMapping("/getall-person")
+	@PostMapping("/listing")
 	public ResponseHandler getAllPersonDetails(@RequestBody PersonalDetailsListing personalDetailsListing) {
 		ResponseHandler response = new ResponseHandler();
 
@@ -99,7 +99,7 @@ public class PersonalDetailsController {
 		return response;
 	}
 
-	@PatchMapping("/delete-person/{personId}")
+	@PatchMapping("/delete-by-id/{personId}")
 	public ResponseHandler deletePersonDetails(@PathVariable Integer personId) {
 
 		ResponseHandler response = new ResponseHandler();
@@ -119,7 +119,7 @@ public class PersonalDetailsController {
 		return response;
 	}
 
-	@PutMapping("/update-person/{personId}")
+	@PutMapping("/update-by-id/{personId}")
 	public ResponseHandler updatepersonById(@PathVariable Integer personId, @RequestBody PdRequestDto pdRequestDto) {
 		ResponseHandler response = new ResponseHandler();
 
@@ -143,7 +143,7 @@ public class PersonalDetailsController {
 
 	}
 
-	@GetMapping("/get-personbyid/{personId}")
+	@GetMapping("/get-by-id/{personId}")
 	public ResponseHandler findbyidPersonDetails(@PathVariable Integer personId) {
 		ResponseHandler response = new ResponseHandler();
 

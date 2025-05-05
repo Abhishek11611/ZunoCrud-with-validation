@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -772,21 +776,18 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 		
 
-	    XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
-	        XSSFSheet sheet = workbook.getSheetAt(0);
-	        
-			XSSFWorkbook workbooks = new XSSFWorkbook();
-			XSSFSheet exportsheets = workbooks.createSheet("Error Info");
-			XSSFRow rows = exportsheets.createRow(0);
-	 	     rows.createCell(0).setCellValue("error id");
-			rows.createCell(1).setCellValue("error");
-			rows.createCell(2).setCellValue("error field");
-			rows.createCell(3).setCellValue("error row");
-			rows.createCell(4).setCellValue("status");
-			int RowIndex = 1;
+		Workbook workbook = new XSSFWorkbook(file.getInputStream());
+		Sheet sheet = workbook.getSheetAt(0);
+
+		Row headerRow2 = sheet.getRow(0);
+		int lastcol = headerRow2.getLastCellNum();
+		
+		headerRow2.createCell(lastcol).setCellValue("error message");
+		headerRow2.createCell(lastcol+1).setCellValue("error status");
+		
 
 	        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-	            XSSFRow row = sheet.getRow(i);
+	            Row row = sheet.getRow(i);
 	            if (row == null) continue;
 
 	            List<String> errors = new ArrayList<>();
@@ -917,18 +918,16 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 						errorTable.setStatus("Fail");
 						errorTable.setErrorRow("Row " + i);
 						ErrorTable saves = errorTableRepository.save(errorTable);
-						XSSFRow dataRows = exportsheets.createRow(RowIndex);
-						
-						dataRows.createCell(0).setCellValue(saves.getErrorId());
-						dataRows.createCell(1).setCellValue(eros);
-						dataRows.createCell(2).setCellValue(errorsField.get(k));
-						dataRows.createCell(3).setCellValue("Row " + i);
-						dataRows.createCell(4).setCellValue("Fail");
-						RowIndex++;
 						
 						k++;
 
 					}
+					
+					Cell errorMessage = row.createCell(lastcol);
+					Cell errorStatus = row.createCell(lastcol+1);
+					
+					errorMessage.setCellValue(String.join(",",errors ));
+					errorStatus.setCellValue("Fail");
 	                
 	                
 	                
@@ -958,20 +957,26 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	                
 	                ErrorTable errorTable = new ErrorTable();
 	                errorTable.setError(save.getPersonId()+"");
-	                errorTable.setErrorField(String.join(", ", errors));
+	                errorTable.setErrorField("");
 	                errorTable.setStatus("Success");
 	                errorTable.setErrorRow("Row "+i);
-	                errorTableRepository.save(errorTable);
+	                ErrorTable save2 = errorTableRepository.save(errorTable);
 	                
 	                
-	                XSSFRow dataRows = exportsheets.createRow(RowIndex);
-        	        
+//	                XSSFRow dataRows = exportsheets.createRow(RowIndex);
+//					
+//					dataRows.createCell(0).setCellValue(save2.getErrorId());
+//					dataRows.createCell(1).setCellValue("");
+//					dataRows.createCell(2).setCellValue("");
+//					dataRows.createCell(3).setCellValue("Row " + i);
+//					dataRows.createCell(4).setCellValue("Success");
+//					RowIndex++;
 	                
-	                 dataRows.createCell(1).setCellValue(save.getPersonId()+"");  
-	                 dataRows.createCell(2).setCellValue("");  
-	                 dataRows.createCell(3).setCellValue("Row "+i);  
-	                 dataRows.createCell(4).setCellValue("Success"); 
-	                 RowIndex++;
+	                Cell errorMessage = row.createCell(lastcol);
+					Cell errorStatus = row.createCell(lastcol+1);
+					
+					errorMessage.setCellValue(save.getPersonId());
+					errorStatus.setCellValue("Success");
 	            }
 	        }
 	    
@@ -983,16 +988,13 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 			String filePaths = folderPaths + shortUUID + "Proposals.xlsx";
 
 			FileOutputStream outs = new FileOutputStream(filePaths);
-			workbooks.write(outs);
+			workbook.write(outs);
 			
 			outs.close();
-			workbooks.close();
+
 		
 			workbook.close();
 		
-
-	  
-//	    personalDetailsRepository.saveAll(list);
 	    return "Added Successfully";
 	}
 	
