@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -36,4 +37,7 @@ public interface PersonalDetailsService {
 	
 	public String savedatafromexcel(MultipartFile file) throws IOException;
 	
+	public String excelBatchProcessing(MultipartFile file) throws IOException;
+	
+	public void batchProcessing() throws FileNotFoundException;
 }

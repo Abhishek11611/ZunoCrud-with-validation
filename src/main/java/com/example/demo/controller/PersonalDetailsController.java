@@ -217,5 +217,26 @@ public class PersonalDetailsController {
 		}
 		return response;
 	}
+	
+//	======================================= Batch Processing =============================================================
+	
+	@PostMapping(value = "/uploadexcelfile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+
+	public ResponseHandler excelBatchProcessing(@RequestParam("file") MultipartFile file) {
+		
+		ResponseHandler response = new ResponseHandler();
+		
+		try {
+			personalDetailsService.excelBatchProcessing(file);
+			response.setStatus(true);
+			response.setMessage("Excel data saved successfully");
+			response.setData(null);
+		} catch (Exception e) {
+			response.setStatus(false);
+			response.setMessage("Failed to upload Excel: " + e.getMessage());
+			response.setData(null);
+		}
+		return response;
+	}
 
 }

@@ -1,9 +1,10 @@
 package com.example.demo.service;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,12 +18,14 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.ErrorTable;
 import com.example.demo.entity.NominieeDetailsEntity;
 import com.example.demo.entity.PersonalDetailsEntity;
+import com.example.demo.entity.QueTable;
 import com.example.demo.enums.Gender;
 import com.example.demo.enums.MaritalStatus;
 import com.example.demo.enums.Title;
@@ -31,6 +34,7 @@ import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.repository.ErrorTableRepository;
 import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
+import com.example.demo.repository.QueRepository;
 import com.example.demo.requestdto.NomineeRequestDto;
 import com.example.demo.requestdto.PdRequestDto;
 
@@ -51,6 +55,9 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	
 	@Autowired
 	private ErrorTableRepository errorTableRepository;
+	
+	@Autowired
+	private QueRepository queRepository;
 	
 //================================================= Add proposal ===========================================================================
 	@Override
@@ -953,7 +960,6 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	                
 	                PersonalDetailsEntity save = personalDetailsRepository.save(detailsEntity);
 
-//	                list.add(detailsEntity);
 	                
 	                ErrorTable errorTable = new ErrorTable();
 	                errorTable.setError(save.getPersonId()+"");
@@ -962,15 +968,6 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	                errorTable.setErrorRow("Row "+i);
 	                ErrorTable save2 = errorTableRepository.save(errorTable);
 	                
-	                
-//	                XSSFRow dataRows = exportsheets.createRow(RowIndex);
-//					
-//					dataRows.createCell(0).setCellValue(save2.getErrorId());
-//					dataRows.createCell(1).setCellValue("");
-//					dataRows.createCell(2).setCellValue("");
-//					dataRows.createCell(3).setCellValue("Row " + i);
-//					dataRows.createCell(4).setCellValue("Success");
-//					RowIndex++;
 	                
 	                Cell errorMessage = row.createCell(lastcol);
 					Cell errorStatus = row.createCell(lastcol+1);
@@ -998,7 +995,474 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 	    return "Added Successfully";
 	}
 	
+	
+//	========================================== Excel Batch Processing=============================================================
 
+	@Override
+	public String excelBatchProcessing(MultipartFile file) throws IOException {
+		
+		Workbook workbook = new XSSFWorkbook(file.getInputStream());
+		Sheet sheet = workbook.getSheetAt(0);
+		
+		int totalrow = sheet.getLastRowNum();
+		int batchsize=3;
+		
+		if(totalrow > 5) {
+			
+			String folderPaths = "C:\\Users\\HP\\Downloads\\";
+
+			String shortUUID = UUID.randomUUID().toString().substring(0, 8);
+
+			String filePaths = folderPaths + shortUUID + "Proposals.xlsx";
+
+			FileOutputStream outs = new FileOutputStream(filePaths);
+			workbook.write(outs);
+			
+			QueTable queTable = new QueTable();
+			
+			queTable.setFilePath(filePaths);
+			queTable.setRowCount(totalrow);
+			queTable.setIsProcess("N");
+			queTable.setRowRead(0);
+			queTable.setStatus("N");
+			queTable.setLastProcessCount(batchsize);
+
+			queRepository.save(queTable);
+
+			workbook.close();
+			return "File goes for batch processing";
+		}
+		
+		
+        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            Row row = sheet.getRow(i);
+            if (row == null) continue;
+
+            List<String> errors = new ArrayList<>();
+            List<String> errorsField = new ArrayList<>();
+            
+            PersonalDetailsEntity detailsEntity = new PersonalDetailsEntity();
+
+            if (row.getCell(1) == null || row.getCell(1).getStringCellValue().isEmpty()) {
+                errors.add("FirstName is Empty");
+                errorsField.add("FirstName");
+            }
+
+            
+            if (row.getCell(2) == null || row.getCell(2).getStringCellValue().isEmpty()) {
+                errors.add("MiddleName is Empty");
+                errorsField.add("MiddleName");
+            }
+
+         
+            if (row.getCell(3) == null || row.getCell(3).getStringCellValue().isEmpty()) {
+                errors.add("LastName is Empty");
+                errorsField.add("LastName");
+            }
+
+            
+            try {
+            	Gender.valueOf(row.getCell(4).getStringCellValue());
+            } catch (Exception e) {
+            	errors.add("Invalid or Empty Gender");
+            	errorsField.add("Gender");
+            }
+        
+            if (row.getCell(5) == null || row.getCell(5).getCellType() != CellType.NUMERIC) {
+                errors.add("DateOfBirth is Empty");
+                errorsField.add("DateOfBirth");
+            }
+
+            
+            if (row.getCell(6) == null || row.getCell(6).getStringCellValue().isEmpty() || !row.getCell(6).getStringCellValue().matches("[A-Z]{5}[0-9]{4}[A-Z]{1}") ) {
+                errors.add("Pancard is Empty");
+                errorsField.add("Pancard");
+            }else if(personalDetailsRepository.existsByPersonPanNumber(row.getCell(6).getStringCellValue())) {
+            	errors.add("PanCard Already Existing");  errorsField.add("Pancard");
+            }
+
+            Long addhar= (long) row.getCell(7).getNumericCellValue();
+	          
+            if (row.getCell(7) == null || row.getCell(7).getCellType() != CellType.NUMERIC ) {
+                errors.add("AadhaarCard is Empty");
+                errorsField.add("AadhaarCard");
+            } else if (addhar.toString().length()!=12) {
+            	 errors.add("AadhaarCard Must be 12 digit");
+	                errorsField.add("AadhaarCard");
+            }          
+            
+            if(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()) == null || MaritalStatus.valueOf(row.getCell(8).getStringCellValue()).toString().isEmpty()) {
+            	 errors.add("Invalid or Empty MaritalStatus");
+            	 errorsField.add("MaritalStatus");
+            }
+
+        
+            if (row.getCell(9) == null || row.getCell(9).getStringCellValue().isEmpty()) {
+                errors.add("Email is Empty");
+                errorsField.add("Email");
+            }
+            else if(personalDetailsRepository.existsByPersonEmail(row.getCell(9).getStringCellValue())) {
+            	errors.add("Email Already Existing"); errorsField.add("Email");
+            }
+
+         
+            if (row.getCell(10) == null || row.getCell(10).getCellType() != CellType.NUMERIC || row.getCell(10).getNumericCellValue() == 0) {
+                errors.add("Alternate Mobile Number is empty or invalid"); errorsField.add("Alternate Mobile Number");
+            }else if(personalDetailsRepository.existsByPersonMobileNo((long)row.getCell(10).getNumericCellValue())) {
+            	errors.add("Mobile Number Already Existing"); errorsField.add("Alternate Mobile Number");
+            }
+
+           
+            if (row.getCell(11) == null || row.getCell(11).getStringCellValue().isEmpty()) {
+                errors.add("Address1 is Empty"); errorsField.add("Address1");
+            }
+
+        
+            if (row.getCell(12) == null || row.getCell(12).getStringCellValue().isEmpty()) {
+                errors.add("Address2 is Empty"); errorsField.add("Address2");
+            }
+
+            if (row.getCell(13) == null || row.getCell(13).getStringCellValue().isEmpty()) {
+                errors.add("Address3 is Empty"); errorsField.add("Address3");
+            }
+
+           
+            if (row.getCell(14) == null || row.getCell(14).getCellType() != CellType.NUMERIC || row.getCell(14).getNumericCellValue() == 0) {
+                errors.add("Pincode is Empty or Invalid"); errorsField.add("Pincode");
+            }
+
+        
+            if (row.getCell(15) == null || row.getCell(15).getStringCellValue().isEmpty()) {
+                errors.add("City is Empty"); errorsField.add("City");
+            }
+          
+            if (row.getCell(16) == null || row.getCell(16).getStringCellValue().isEmpty()) {
+                errors.add("State is Empty"); errorsField.add("State");
+            }
+
+           Long number1 =(long)row.getCell(17).getNumericCellValue();
+           
+            if (row.getCell(17) == null || row.getCell(17).getCellType() != CellType.NUMERIC || row.getCell(17).getNumericCellValue() == 0) {
+                errors.add("Mobile number is empty or invalid"); errorsField.add("Mobile number");
+            }else if(number1.toString().length()!=10) {
+            	errors.add("Mobile number Must be 10 digit"); errorsField.add("Mobile number");
+            }
+
+            if(Title.valueOf(row.getCell(18).getStringCellValue()) == null || Title.valueOf(row.getCell(18).getStringCellValue()).toString().isEmpty()) {
+            	errors.add("Invalid or Empty Title"); errorsField.add("Title");
+            }
+
+			if (!errors.isEmpty()) {
+				int k = 0;
+				for (String eros : errors) {
+
+					ErrorTable errorTable = new ErrorTable();
+					errorTable.setError(eros);
+					errorTable.setErrorField(errorsField.get(k));
+					errorTable.setStatus("Fail");
+					errorTable.setErrorRow("Row " + i);
+					ErrorTable saves = errorTableRepository.save(errorTable);
+					
+					k++;
+
+				}
+            
+                
+            } else {
+                detailsEntity.setPersonFirstName(row.getCell(1).getStringCellValue());
+                detailsEntity.setPersonMiddleName(row.getCell(2).getStringCellValue());
+                detailsEntity.setPersonLastName(row.getCell(3).getStringCellValue());
+                detailsEntity.setPersonGender(Gender.valueOf(row.getCell(4).getStringCellValue()));
+                detailsEntity.setPersonDateOfBirth(row.getCell(5).getDateCellValue());
+                detailsEntity.setPersonPanNumber(row.getCell(6).getStringCellValue());
+                detailsEntity.setPersonAadhaarNumber((long) row.getCell(7).getNumericCellValue());
+                detailsEntity.setPersonMaritalStatus(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()));
+                detailsEntity.setPersonEmail(row.getCell(9).getStringCellValue());
+                detailsEntity.setPersonAlternateMobileNo((long) row.getCell(10).getNumericCellValue());
+                detailsEntity.setPersonAddress1(row.getCell(11).getStringCellValue());
+                detailsEntity.setPersonAddress2(row.getCell(12).getStringCellValue());
+                detailsEntity.setPersonAddress3(row.getCell(13).getStringCellValue());
+                detailsEntity.setPersonPincode((long) row.getCell(14).getNumericCellValue());
+                detailsEntity.setPersonCity(row.getCell(15).getStringCellValue());
+                detailsEntity.setPersonState(row.getCell(16).getStringCellValue());
+                detailsEntity.setPersonMobileNo((long) row.getCell(17).getNumericCellValue());
+                detailsEntity.setPersonTilte(Title.valueOf(row.getCell(18).getStringCellValue()));
+                
+                PersonalDetailsEntity save = personalDetailsRepository.save(detailsEntity);
+
+                
+                ErrorTable errorTable = new ErrorTable();
+                errorTable.setError(save.getPersonId()+"");
+                errorTable.setErrorField("");
+                errorTable.setStatus("Success");
+                errorTable.setErrorRow("Row "+i);
+                ErrorTable save2 = errorTableRepository.save(errorTable);
+                
+                
+				
+				
+            }
+		}
+
+		String folderPaths = "C:\\Users\\HP\\Downloads\\";
+
+		String shortUUID = UUID.randomUUID().toString().substring(0, 8);
+
+		String filePaths = folderPaths + shortUUID + "Proposals.xlsx";
+
+		FileOutputStream outs = new FileOutputStream(filePaths);
+		workbook.write(outs);
+
+		outs.close();
+
+		workbook.close();
+
+		return "Added Successfully";
+	}
+	
+	
+	@Scheduled(fixedDelay = 5000)
+	@Override
+	public void batchProcessing() throws FileNotFoundException {
+		
+		List<QueTable> batchques = queRepository.findByIsProcess("N");
+
+		for (QueTable queTable : batchques) {
+
+			queRepository.save(queTable);
+
+			try {
+				Workbook workbook = new XSSFWorkbook(queTable.getFilePath());
+				Sheet sheet = workbook.getSheetAt(0);
+
+				int rowStart = queTable.getRowRead()+1;
+				int totalrow = queTable.getRowCount();
+				int batchsize = 3;
+
+				for (int i = rowStart; i <= totalrow && i < rowStart + batchsize; i++) {
+
+					 Row row = sheet.getRow(i);
+			            if (row == null) continue;
+
+			            List<String> errors = new ArrayList<>();
+			            List<String> errorsField = new ArrayList<>();
+			            
+			            PersonalDetailsEntity detailsEntity = new PersonalDetailsEntity();
+
+			            if (row.getCell(1) == null || row.getCell(1).getStringCellValue().isEmpty()) {
+			                errors.add("FirstName is Empty");
+			                errorsField.add("FirstName");
+			            }
+
+			            
+			            if (row.getCell(2) == null || row.getCell(2).getStringCellValue().isEmpty()) {
+			                errors.add("MiddleName is Empty");
+			                errorsField.add("MiddleName");
+			            }
+
+			         
+			            if (row.getCell(3) == null || row.getCell(3).getStringCellValue().isEmpty()) {
+			                errors.add("LastName is Empty");
+			                errorsField.add("LastName");
+			            }
+			            
+//			            if(Gender.valueOf(row.getCell(4).getStringCellValue()) == null || Gender.valueOf(row.getCell(4).getStringCellValue()).toString().isEmpty()) {
+//			            	 errors.add(" Gender is Empty");
+//			            	 errorsField.add("Gender");
+//			            }
+			            
+			            try {
+			            	Gender.valueOf(row.getCell(4).getStringCellValue());
+			            } catch (Exception e) {
+			            	errors.add("Invalid or Empty Gender");
+			            	errorsField.add("Gender");
+			            }
+			        
+			            if (row.getCell(5) == null || row.getCell(5).getCellType() != CellType.NUMERIC) {
+			                errors.add("DateOfBirth is Empty");
+			                errorsField.add("DateOfBirth");
+			            }
+
+			            
+			            if (row.getCell(6) == null || row.getCell(6).getStringCellValue().isEmpty() || !row.getCell(6).getStringCellValue().matches("[A-Z]{5}[0-9]{4}[A-Z]{1}") ) {
+			                errors.add("Pancard is Empty");
+			                errorsField.add("Pancard");
+			            }else if(personalDetailsRepository.existsByPersonPanNumber(row.getCell(6).getStringCellValue())) {
+			            	errors.add("PanCard Already Existing");  errorsField.add("Pancard");
+			            }
+
+			            Long addhar = getCellLongValue(row.getCell(7));
+
+			          
+			            if (addhar == null) {
+			                errors.add("AadhaarCard is Empty");
+			                errorsField.add("AadhaarCard");
+			            } else if (addhar.toString().length() != 12) {
+			                errors.add("AadhaarCard Must be 12 digit");
+			                errorsField.add("AadhaarCard");
+			            }
+      
+			            
+			            try {
+			                MaritalStatus.valueOf(row.getCell(8).getStringCellValue().trim().toUpperCase());
+			            } catch (Exception e) {
+			                errors.add("Invalid or Empty MaritalStatus");
+			                errorsField.add("MaritalStatus");
+			            }
+
+
+
+			        
+			            if (row.getCell(9) == null || row.getCell(9).getStringCellValue().isEmpty()) {
+			                errors.add("Email is Empty");
+			                errorsField.add("Email");
+			            }
+			            else if(personalDetailsRepository.existsByPersonEmail(row.getCell(9).getStringCellValue())) {
+			            	errors.add("Email Already Existing"); errorsField.add("Email");
+			            }
+
+			         
+			            if (row.getCell(10) == null || row.getCell(10).getCellType() != CellType.NUMERIC || row.getCell(10).getNumericCellValue() == 0) {
+			                errors.add("Alternate Mobile Number is empty or invalid"); errorsField.add("Alternate Mobile Number");
+			            }else if(personalDetailsRepository.existsByPersonMobileNo((long)row.getCell(10).getNumericCellValue())) {
+			            	errors.add("Mobile Number Already Existing"); errorsField.add("Alternate Mobile Number");
+			            }
+
+			           
+			            if (row.getCell(11) == null || row.getCell(11).getStringCellValue().isEmpty()) {
+			                errors.add("Address1 is Empty"); errorsField.add("Address1");
+			            }
+
+			        
+			            if (row.getCell(12) == null || row.getCell(12).getStringCellValue().isEmpty()) {
+			                errors.add("Address2 is Empty"); errorsField.add("Address2");
+			            }
+
+			            if (row.getCell(13) == null || row.getCell(13).getStringCellValue().isEmpty()) {
+			                errors.add("Address3 is Empty"); errorsField.add("Address3");
+			            }
+
+			           
+			            if (row.getCell(14) == null || row.getCell(14).getCellType() != CellType.NUMERIC || row.getCell(14).getNumericCellValue() == 0) {
+			                errors.add("Pincode is Empty or Invalid"); errorsField.add("Pincode");
+			            }
+
+			        
+			            if (row.getCell(15) == null || row.getCell(15).getStringCellValue().isEmpty()) {
+			                errors.add("City is Empty"); errorsField.add("City");
+			            }
+			          
+			            if (row.getCell(16) == null || row.getCell(16).getStringCellValue().isEmpty()) {
+			                errors.add("State is Empty"); errorsField.add("State");
+			            }
+
+			            Long number1 = getCellLongValue(row.getCell(17));
+
+			           
+			            if (number1 == null || number1 == 0) {
+			                errors.add("Mobile number is empty or invalid");
+			                errorsField.add("Mobile number");
+			            } else if (number1.toString().length() != 10) {
+			                errors.add("Mobile number Must be 10 digit");
+			                errorsField.add("Mobile number");
+			            }
+
+
+			            try {
+			                Title.valueOf(row.getCell(18).getStringCellValue().trim().toUpperCase());
+			            } catch (Exception e) {
+			                errors.add("Invalid or Empty Title");
+			                errorsField.add("Title");
+			            }
+
+
+						if (!errors.isEmpty()) {
+							int k = 0;
+							for (String eros : errors) {
+
+								ErrorTable errorTable = new ErrorTable();
+								errorTable.setError(eros);
+								errorTable.setErrorField(errorsField.get(k));
+								errorTable.setStatus("Fail");
+								errorTable.setErrorRow("Row " + i);
+								ErrorTable saves = errorTableRepository.save(errorTable);
+								
+								k++;
+
+							}
+							
+						
+			                
+			                
+			                
+			            } else {
+			                detailsEntity.setPersonFirstName(row.getCell(1).getStringCellValue());
+			                detailsEntity.setPersonMiddleName(row.getCell(2).getStringCellValue());
+			                detailsEntity.setPersonLastName(row.getCell(3).getStringCellValue());
+			                detailsEntity.setPersonGender(Gender.valueOf(row.getCell(4).getStringCellValue()));
+			                detailsEntity.setPersonDateOfBirth(row.getCell(5).getDateCellValue());
+			                detailsEntity.setPersonPanNumber(row.getCell(6).getStringCellValue());
+//			                detailsEntity.setPersonAadhaarNumber((long) row.getCell(7).getNumericCellValue());
+			                detailsEntity.setPersonAadhaarNumber(addhar);
+			                detailsEntity.setPersonMaritalStatus(MaritalStatus.valueOf(row.getCell(8).getStringCellValue()));
+			                detailsEntity.setPersonEmail(row.getCell(9).getStringCellValue());
+			                detailsEntity.setPersonAlternateMobileNo((long) row.getCell(10).getNumericCellValue());
+			                detailsEntity.setPersonAddress1(row.getCell(11).getStringCellValue());
+			                detailsEntity.setPersonAddress2(row.getCell(12).getStringCellValue());
+			                detailsEntity.setPersonAddress3(row.getCell(13).getStringCellValue());
+			                detailsEntity.setPersonPincode((long) row.getCell(14).getNumericCellValue());
+			                detailsEntity.setPersonCity(row.getCell(15).getStringCellValue());
+			                detailsEntity.setPersonState(row.getCell(16).getStringCellValue());
+//			                detailsEntity.setPersonMobileNo((long) row.getCell(17).getNumericCellValue());
+			                detailsEntity.setPersonMobileNo(number1);
+			                detailsEntity.setPersonTilte(Title.valueOf(row.getCell(18).getStringCellValue()));
+			                
+			                PersonalDetailsEntity save = personalDetailsRepository.save(detailsEntity);
+
+			                
+			                ErrorTable errorTable = new ErrorTable();
+			                errorTable.setError(save.getPersonId()+"");
+			                errorTable.setErrorField("");
+			                errorTable.setStatus("Success");
+			                errorTable.setErrorRow("Row "+i);
+			                ErrorTable save2 = errorTableRepository.save(errorTable);
+				
+			            }
+			        
+			    
+
+					queTable.setRowRead(i);
+				}
+
+				if (queTable.getRowRead() >= totalrow) {
+					queTable.setIsProcess("Y");
+					queTable.setStatus("Y");
+				}
+
+				queRepository.save(queTable);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	
+
+	
+	
+	private Long getCellLongValue(Cell cell) {
+	    if (cell == null) return null;
+	    if (cell.getCellType() == CellType.NUMERIC) {
+	        return (long) cell.getNumericCellValue();
+	    } else if (cell.getCellType() == CellType.STRING) {
+	        String val = cell.getStringCellValue().trim();
+	        if (!val.isEmpty() && val.matches("\\d+")) {
+	            return Long.parseLong(val);
+	        }
+	    }
+	    return null;
+	}
 
 
 }
