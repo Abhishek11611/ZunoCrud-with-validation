@@ -62,7 +62,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 //================================================= Add proposal ===========================================================================
 	@Override
-	public String addPerson(PdRequestDto pdRequestDto) {
+	public PersonalDetailsEntity addPerson(PdRequestDto pdRequestDto) {
 
 		PersonalDetailsEntity pdobj = new PersonalDetailsEntity();
 		List<String> errors = new ArrayList<>();
@@ -149,7 +149,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 		if (!errors.isEmpty()) {
 			throw new IllegalArgumentException(String.join(", ", errors));
 		}
-
+ 
 		pdobj.setPersonTilte(pdRequestDto.getPersonTilte());
 //	    pdobj.setPersonFullName(pdRequestDto.getPersonFullName());
 		pdobj.setPersonFirstName(pdRequestDto.getPersonFirstName());
@@ -189,7 +189,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 		nomineeDetailsRepository.saveAll(list);
 
-		return "Person And Nominee Added Successfully";
+		return pdobj;
 	}
 
 //	==================================================== GetAll proposal ByPageable =============================================================
@@ -429,11 +429,13 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 //============================================================== Update Proposal ================================================================
 
 	@Override
-	public String updatepersonById(Integer personId, PdRequestDto pdRequestDto) {
+	public PersonalDetailsEntity updatepersonById(Integer personId, PdRequestDto pdRequestDto) {
 
 		Optional<PersonalDetailsEntity> per = personalDetailsRepository.findByPersonIdAndStatus(personId, "Yes");
 
-		if (per.isPresent()) {
+		if (!per.isPresent()) {
+			throw new IllegalArgumentException(" Invalid PersonId");
+		}
 
 			PersonalDetailsEntity personget = per.get();
 
@@ -545,10 +547,9 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 //			nomineeDetailsRepository.saveAll(nominieeDetailsEntities);
 
-			return "Person Details Update Succesfully!!";
-		} else {
-			return "Person Details not updated";
-		}
+			return personget;
+		
+		
 
 	}
 
@@ -632,8 +633,7 @@ public class PersonalDetailsServiceImpl implements PersonalDetailsService {
 
 //=================================================== ExportExcel ===================================================================
 
-	// =========== This is For All Database Data export into Excel
-	// File===============
+	// =========== This is For All Database Data export into ExcelFile===============
 
 //	@Override
 //	public void generateExcel(HttpServletResponse response) throws IOException {

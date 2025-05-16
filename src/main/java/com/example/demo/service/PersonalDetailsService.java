@@ -17,13 +17,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface PersonalDetailsService {
 	
-	public String addPerson(PdRequestDto pdRequestDto);
+	public PersonalDetailsEntity addPerson(PdRequestDto pdRequestDto);
 	
 //	public List<PersonalDetailsEntity> getAllPersonDetails(PersonalDetailsListing personalDetailsListing);
 	
 	public String deletePersonDetails(Integer personId);
 	
-	public String updatepersonById(Integer personId,PdRequestDto pdRequestDto);
+	public PersonalDetailsEntity updatepersonById(Integer personId,PdRequestDto pdRequestDto);
 	
 	public PdRequestDto findbyidPersonDetails(Integer personId);
 	

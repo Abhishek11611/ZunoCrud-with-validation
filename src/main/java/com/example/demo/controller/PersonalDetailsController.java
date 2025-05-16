@@ -26,7 +26,7 @@ import com.example.demo.service.PersonalDetailsService;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/personaldetails-api")
+@RequestMapping("/personaldetails_api")
 public class PersonalDetailsController {
 
 	@Autowired
@@ -38,9 +38,9 @@ public class PersonalDetailsController {
 		ResponseHandler response = new ResponseHandler();
 
 		try {
-			String result = personalDetailsService.addPerson(pdRequestDto);
+		PersonalDetailsEntity person = personalDetailsService.addPerson(pdRequestDto);
 
-			response.setData(result);
+			response.setData(person);
 			response.setStatus(true);
 			response.setMessage("Success");
 
@@ -72,15 +72,16 @@ public class PersonalDetailsController {
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
+			response.setTotalRecord(countAllProposal);
 
-			PersonalDetailsSearch search = personalDetailsListing.getPersonalDetailsSearch();
-
-			if (search != null || !search.getPersonFirstName().isEmpty() || !search.getPersonLastName().isEmpty()
-					|| !search.getPersonMobileNo().toString().isEmpty()) {
-				response.setTotalRecord(data.size());
-			} else {
-				response.setTotalRecord(countAllProposal);
-			}
+//			PersonalDetailsSearch search = personalDetailsListing.getPersonalDetailsSearch();
+//
+//			if (search != null || !search.getPersonFirstName().isEmpty() || !search.getPersonLastName().isEmpty()
+//					|| !search.getPersonMobileNo().toString().isEmpty()) {
+//				response.setTotalRecord(data.size());
+//			} else {
+//				response.setTotalRecord(countAllProposal);
+//			}
 
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
@@ -99,7 +100,7 @@ public class PersonalDetailsController {
 		return response;
 	}
 
-	@PatchMapping("/delete-by-id/{personId}")
+	@PatchMapping("/delete_by_id/{personId}")
 	public ResponseHandler deletePersonDetails(@PathVariable Integer personId) {
 
 		ResponseHandler response = new ResponseHandler();
@@ -119,13 +120,13 @@ public class PersonalDetailsController {
 		return response;
 	}
 
-	@PutMapping("/update-by-id/{personId}")
+	@PutMapping("/update_by_id/{personId}")
 	public ResponseHandler updatepersonById(@PathVariable Integer personId, @RequestBody PdRequestDto pdRequestDto) {
 		ResponseHandler response = new ResponseHandler();
 
 		try {
-			String data = personalDetailsService.updatepersonById(personId, pdRequestDto);
-			response.setData(data);
+			 PersonalDetailsEntity updatepersonById = personalDetailsService.updatepersonById(personId, pdRequestDto);
+			response.setData(updatepersonById);
 			response.setStatus(true);
 			response.setMessage("Success");
 
@@ -143,7 +144,7 @@ public class PersonalDetailsController {
 
 	}
 
-	@GetMapping("/get-by-id/{personId}")
+	@GetMapping("/list_by_id/{personId}")
 	public ResponseHandler findbyidPersonDetails(@PathVariable Integer personId) {
 		ResponseHandler response = new ResponseHandler();
 
@@ -152,6 +153,7 @@ public class PersonalDetailsController {
 			response.setData(data);
 			response.setStatus(true);
 			response.setMessage("Success");
+			
 
 		} catch (Exception e) {
 			response.setData(new ArrayList<>());
