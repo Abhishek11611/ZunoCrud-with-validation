@@ -4,14 +4,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -20,6 +23,9 @@ import io.jsonwebtoken.security.Keys;
 
 @Service
 public class JwtUtil {
+	
+	@Autowired
+	private UserRepository userRepository;
 
     // Secure key - must be at least 32 characters for HS256
     private static final String SECRET = "my-super-secret-key-that-is-strong-123!";
@@ -63,27 +69,30 @@ public class JwtUtil {
     public String generateToken(UserDetails userDetails, Map<String, Object> extraClaims) {
         return Jwts
         	.builder()
-            .setClaims(extraClaims) // Custom claims add
-            .setSubject(userDetails.getUsername()) // Username (default claim)
+            .setClaims(extraClaims)
+            .setSubject(userDetails.getUsername()) 
             .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
             .compact();
     }
 
 
-    public Boolean validateToken(String token, UserDetails userDetails,User user) {
+    public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        final String email = extractEmail(token);
+//        final String email = extractEmail(token);
         
+        
+//        Optional<User> userentity = userRepository.findByEmail(email);
+//        User user1 = userentity.get();
         
         if(!username.equals(userDetails.getUsername()) && !isTokenExpired(token)) {
-        	return false;
+        	throw new IllegalArgumentException("Your Token is Invalid");
         }
         
-        if(!email.equals(user.getEmail()) && !isTokenExpired(token)) {
-        	return false;
-        }
+//        if(!email.equals(user1.getEmail()) && !isTokenExpired(token)) {
+//        	return false;
+//        }
         
         return true;
     }

@@ -30,14 +30,14 @@ import com.example.demo.entity.QueTable;
 import com.example.demo.enums.Gender;
 import com.example.demo.enums.MaritalStatus;
 import com.example.demo.enums.Title;
-import com.example.demo.pagination.PersonalDetailsListing;
-import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.repository.ErrorTableRepository;
 import com.example.demo.repository.NomineeDetailsRepository;
 import com.example.demo.repository.PersonalDetailsRepository;
 import com.example.demo.repository.QueRepository;
 import com.example.demo.requestdto.NomineeRequestDto;
 import com.example.demo.requestdto.PdRequestDto;
+import com.example.demo.requestdto.PersonalDetailsListing;
+import com.example.demo.requestdto.PersonalDetailsSearch;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

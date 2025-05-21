@@ -1,12 +1,13 @@
 package com.example.demo.response;
 
+import java.util.List;
+
 public class ResponseHandler {
 
 	private Object Data;
 	private boolean status;
 	private String message;
 	private Integer totalRecord;
-	
 	
 	
 	public Object getData() {

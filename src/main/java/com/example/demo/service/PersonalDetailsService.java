@@ -8,10 +8,10 @@ import java.util.Optional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.PersonalDetailsEntity;
-import com.example.demo.pagination.PersonalDetailsListing;
-import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.requestdto.PdRequestDto;
 import com.example.demo.requestdto.PdRequiredDto;
+import com.example.demo.requestdto.PersonalDetailsListing;
+import com.example.demo.requestdto.PersonalDetailsSearch;
 
 import jakarta.servlet.http.HttpServletResponse;
 

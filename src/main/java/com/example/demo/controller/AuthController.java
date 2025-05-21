@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.requestdto.AuthenticationRequest;
 import com.example.demo.requestdto.AuthenticationResponse;
+import com.example.demo.requestdto.ChangePasswordRequest;
 import com.example.demo.response.ResponseHandler;
 import com.example.demo.service.UserServiceImpl;
 
@@ -28,7 +29,7 @@ public class AuthController {
 		ResponseHandler response = new ResponseHandler();
 
 		try {
-			String response1 = userService.register(request.getUsername(), request.getPassword(), request.getEmail());
+			String response1 = userService.register(request.getUsername(), request.getPassword(), request.getEmail(),request.getUserRole());
 			response.setStatus(true);
 			response.setMessage(" successfully");
 			response.setData(response1);
@@ -55,6 +56,29 @@ public class AuthController {
 			response.setStatus(true);
 			response.setMessage(" successfully");
 			response.setData(authenticationResponse);
+		} catch (IllegalArgumentException e) {
+			response.setStatus(false);
+			response.setMessage("Failed" + e.getMessage());
+			response.setData(null);
+		}
+		catch (Exception e) {
+			response.setStatus(false);
+			response.setMessage("Failed" + e.getMessage());
+			response.setData(null);
+		}
+		return response;
+
+	}
+	
+	@PostMapping("/reset_password")
+	public ResponseHandler changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+		ResponseHandler response = new ResponseHandler();
+
+		try {
+			 String changePassword = userService.changePassword(changePasswordRequest.getUsername(), changePasswordRequest.getOldPassword(), changePasswordRequest.getNewPassword());
+			response.setStatus(true);
+			response.setMessage(" successfully");
+			response.setData(changePassword);
 		} catch (Exception e) {
 			response.setStatus(false);
 			response.setMessage("Failed" + e.getMessage());
@@ -63,4 +87,5 @@ public class AuthController {
 		return response;
 
 	}
+
 }

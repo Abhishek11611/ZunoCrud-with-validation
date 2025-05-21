@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.User;
+import com.example.demo.enums.Role;
 import com.example.demo.jwt.JwtUtil;
 import com.example.demo.repository.UserRepository;
 
@@ -32,8 +33,8 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private JwtUtil jwtUtil;
    
-    public String register(String username, String password, String email) {
-        if (username == null || password == null || email == null) {
+    public String register(String username, String password, String email , Role userRole) {
+        if (username == null || password == null|| userRole ==null) {
             throw new IllegalArgumentException("Username and password must not be null");
         }
 
@@ -42,6 +43,7 @@ public class UserServiceImpl implements UserService{
         user.setUsername(username);
         user.setPassword(encodedPassword);
         user.setEmail(email);
+        user.setUserRole(userRole);
         userRepo.save(user);
 
         return "User registered successfully!";
@@ -51,7 +53,7 @@ public class UserServiceImpl implements UserService{
     public String login(String username, String password) {
       
     	User user = userRepo.findByUsername(username)
-    	        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    	        .orElseThrow(() -> new UsernameNotFoundException(" User not found"));
     	
     	authenticationManager.authenticate(
     			new UsernamePasswordAuthenticationToken(username, password)
@@ -60,7 +62,7 @@ public class UserServiceImpl implements UserService{
     	    // Custom claims 
     	    Map<String, Object> extraClaims = new HashMap<>();
     	    extraClaims.put("userId", user.getId());
-    	    extraClaims.put("email", user.getEmail()); 
+//    	    extraClaims.put("email", user.getEmail()); 
 
     	    // JWT token generate kiya with extra claims
     	    final UserDetails userDetails = new org.springframework.security.core.userdetails.User(
@@ -69,4 +71,19 @@ public class UserServiceImpl implements UserService{
     	    return jwtUtil.generateToken(userDetails, extraClaims);
 
 }
+
+
+	@Override
+	public String changePassword(String username, String oldPassword, String newPassword) {
+		
+		authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(username, oldPassword)
+				);
+		 User user = userRepo.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+		 String encode = passwordEncoder.encode(newPassword);
+		 user.setPassword(encode);
+		 userRepo.save(user);
+		
+		return "Password Changed SuccessFully!!";
+	}
     }

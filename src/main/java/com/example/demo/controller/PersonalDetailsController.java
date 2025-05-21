@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.entity.PersonalDetailsEntity;
-import com.example.demo.pagination.PersonalDetailsListing;
-import com.example.demo.pagination.PersonalDetailsSearch;
 import com.example.demo.requestdto.PdRequestDto;
+import com.example.demo.requestdto.PersonalDetailsListing;
+import com.example.demo.requestdto.PersonalDetailsSearch;
 import com.example.demo.response.ResponseHandler;
 import com.example.demo.service.PersonalDetailsService;
 
@@ -155,7 +155,13 @@ public class PersonalDetailsController {
 			response.setMessage("Success");
 			
 
-		} catch (Exception e) {
+		} catch (IllegalArgumentException e) {
+			response.setData(new ArrayList<>());
+			response.setStatus(false);
+			response.setMessage("failed");
+		}
+ 
+		catch (Exception e) {
 			response.setData(new ArrayList<>());
 			response.setStatus(false);
 			response.setMessage("failed");

@@ -1,6 +1,10 @@
 package com.example.demo.entity;
 
+import com.example.demo.enums.Role;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,10 +21,19 @@ public class User {
     private String username;
     private String password;
     private String email;
+    @Enumerated(EnumType.STRING)
+    private Role userRole;
     
     
 
-    public String getEmail() {
+    
+	public Role getUserRole() {
+		return userRole;
+	}
+	public void setUserRole(Role userRole) {
+		this.userRole = userRole;
+	}
+	public String getEmail() {
 		return email;
 	}
 	public void setEmail(String email) {

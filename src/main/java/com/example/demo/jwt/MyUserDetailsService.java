@@ -27,10 +27,10 @@ public class MyUserDetailsService implements UserDetailsService {
         );
     }
     
-    public User loadUserByEmail(String email) throws UsernameNotFoundException{
-    	 User user = userRepository.findByEmail(email)
-    	            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-    	 
-    	 return user;
-    }
+//    public User loadUserByEmail(String email) throws UsernameNotFoundException{
+//    	 User user = userRepository.findByEmail(email)
+//    	            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+//    	 
+//    	 return user;
+//    }
 }

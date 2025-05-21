@@ -1,4 +1,4 @@
-package com.example.demo.pagination;
+package com.example.demo.requestdto;
 
 import java.util.List;
 
