@@ -14,7 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.User;
+import com.example.demo.entity.UserToken;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.UserTokenRepository;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -26,6 +28,9 @@ public class JwtUtil {
 	
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private UserTokenRepository userTokenRepository;
 
     // Secure key - must be at least 32 characters for HS256
     private static final String SECRET = "my-super-secret-key-that-is-strong-123!";
@@ -67,7 +72,9 @@ public class JwtUtil {
 
 
     public String generateToken(UserDetails userDetails, Map<String, Object> extraClaims) {
-        return Jwts
+    	
+    	
+         String token = Jwts
         	.builder()
             .setClaims(extraClaims)
             .setSubject(userDetails.getUsername()) 
@@ -75,8 +82,23 @@ public class JwtUtil {
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
             .compact();
+        
+        saveTokenToDatabase(userDetails.getUsername(),token);
+        
+        return token;
     }
-
+    
+    public void saveTokenToDatabase(String username, String token) {
+    	
+    	UserToken userToken = new UserToken();
+    	userToken.setUsername(username);
+    	userToken.setToken(token);
+        userToken.setExpiryDate(new Date(System.currentTimeMillis() + 1000 * 60 * 5));
+    	
+    	userTokenRepository.save(userToken);
+    	
+    }
+    
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);

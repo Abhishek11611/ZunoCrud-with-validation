@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,9 +14,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.entity.User;
+import com.example.demo.entity.UserToken;
 import com.example.demo.enums.Role;
 import com.example.demo.jwt.JwtUtil;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.UserTokenRepository;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -23,6 +26,9 @@ public class UserServiceImpl implements UserService{
    
 	@Autowired
     private UserRepository userRepo; 
+	
+	@Autowired
+	private UserTokenRepository userTokenRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder; 
@@ -58,16 +64,24 @@ public class UserServiceImpl implements UserService{
     	authenticationManager.authenticate(
     			new UsernamePasswordAuthenticationToken(username, password)
     			);
-
-    	    // Custom claims 
+ 
     	    Map<String, Object> extraClaims = new HashMap<>();
     	    extraClaims.put("userId", user.getId());
-//    	    extraClaims.put("email", user.getEmail()); 
 
-    	    // JWT token generate kiya with extra claims
     	    final UserDetails userDetails = new org.springframework.security.core.userdetails.User(
     	        username, password, new ArrayList<>()
     	    );
+    	    
+    	    Optional<UserToken> tokenOptional = userTokenRepository.findByUsername(username);
+
+            if (tokenOptional.isPresent()) {
+                UserToken existingToken = tokenOptional.get();
+                if (existingToken.getExpiryDate().after(new java.util.Date())) {
+                    
+                    return existingToken.getToken();
+                }
+            }
+    	    
     	    return jwtUtil.generateToken(userDetails, extraClaims);
 
 }
