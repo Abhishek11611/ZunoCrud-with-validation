@@ -43,6 +43,10 @@ public class UserServiceImpl implements UserService{
         if (username == null || password == null|| userRole ==null) {
             throw new IllegalArgumentException("Username and password must not be null");
         }
+        boolean existsByUsername = userRepo.existsByUsername(username);
+        if(existsByUsername) {
+        	throw new IllegalArgumentException("Username Already exist !!!");
+        }
 
         String encodedPassword = passwordEncoder.encode(password);
         User user = new User();

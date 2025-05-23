@@ -9,5 +9,7 @@ import com.example.demo.entity.UserToken;
 public interface UserTokenRepository extends JpaRepository<UserToken, Integer> {
 	
 	Optional<UserToken> findByUsername (String username);
+	
+	public boolean existsByUsername(String username);
 
 }
