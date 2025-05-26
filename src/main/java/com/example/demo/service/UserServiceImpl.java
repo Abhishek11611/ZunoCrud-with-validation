@@ -1,9 +1,12 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,10 +16,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entity.SessionEntity;
 import com.example.demo.entity.User;
 import com.example.demo.entity.UserToken;
 import com.example.demo.enums.Role;
 import com.example.demo.jwt.JwtUtil;
+import com.example.demo.repository.SessionRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.UserTokenRepository;
 
@@ -30,6 +35,9 @@ public class UserServiceImpl implements UserService{
 	@Autowired
 	private UserTokenRepository userTokenRepository;
 
+	@Autowired
+	private SessionRepository sessionRepository;
+	
     @Autowired
     private PasswordEncoder passwordEncoder; 
 
@@ -58,37 +66,62 @@ public class UserServiceImpl implements UserService{
 
         return "User registered successfully!";
     }
-
-
+    
     public String login(String username, String password) {
-      
-    	User user = userRepo.findByUsername(username)
-    	        .orElseThrow(() -> new UsernameNotFoundException(" User not found"));
     	
-    	authenticationManager.authenticate(
-    			new UsernamePasswordAuthenticationToken(username, password)
-    			);
- 
-    	    Map<String, Object> extraClaims = new HashMap<>();
-    	    extraClaims.put("userId", user.getId());
+		User user = userRepo.findByUsername(username)
+				.orElseThrow(() -> new UsernameNotFoundException(" User not found"));
 
-    	    final UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-    	        username, password, new ArrayList<>()
-    	    );
-    	    
-    	    Optional<UserToken> tokenOptional = userTokenRepository.findByUsername(username);
+		authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+		
+		SessionEntity sessionEntity = new SessionEntity();
+		String sessionIdUuid= UUID.randomUUID().toString();
 
-            if (tokenOptional.isPresent()) {
-                UserToken existingToken = tokenOptional.get();
-                if (existingToken.getExpiryDate().after(new java.util.Date())) {
-                    
-                    return existingToken.getToken();
-                }
-            }
-    	    
-    	    return jwtUtil.generateToken(userDetails, extraClaims);
+		
+		sessionEntity.setSessionId(sessionIdUuid);
+		sessionEntity.setStatus("Active");
+		sessionEntity.setUserId(user.getId());
+		sessionEntity.setExpiryDate(LocalDateTime.now().plusHours(1));
+		
+		SessionEntity sessionId = sessionRepository.save(sessionEntity);
 
-}
+    	
+		return sessionId.getSessionId();
+		
+    }
+
+
+//    public String login(String username, String password) {
+//      
+//    	User user = userRepo.findByUsername(username)
+//    	        .orElseThrow(() -> new UsernameNotFoundException(" User not found"));
+//    	
+//    	authenticationManager.authenticate(
+//    			new UsernamePasswordAuthenticationToken(username, password)
+//    			);
+// 
+//    	    Map<String, Object> extraClaims = new HashMap<>();
+//    	    extraClaims.put("userId", user.getId());
+//
+//    	    final UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+//    	        username, password, new ArrayList<>()
+//    	    );
+//    	    
+//    	    
+//    	    
+////    	    Optional<UserToken> tokenOptional = userTokenRepository.findByUsername(username);
+////
+////            if (tokenOptional.isPresent()) {
+////                UserToken existingToken = tokenOptional.get();
+////                if (existingToken.getExpiryDate().after(new java.util.Date())) {
+////                    
+////                    return existingToken.getToken();
+////                }
+////            }
+//    	    
+//    	    return jwtUtil.generateToken(userDetails, extraClaims);
+//
+//}
 
 
 	@Override

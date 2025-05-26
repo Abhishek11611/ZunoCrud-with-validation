@@ -48,24 +48,21 @@ public class AuthController {
 		ResponseHandler response = new ResponseHandler();
 
 		try {
-			String username = request.getUsername();
-			String password = request.getPassword();
-			String token = userService.login(username, password);
-			AuthenticationResponse authenticationResponse = new AuthenticationResponse(token);
-
+			String sessionid = userService.login(request.getUsername(), request.getPassword());
 			response.setStatus(true);
 			response.setMessage(" successfully");
-			response.setData(authenticationResponse);
+			response.setData("SessionId = " + sessionid);
+
 		} catch (IllegalArgumentException e) {
 			response.setStatus(false);
 			response.setMessage("Failed" + e.getMessage());
 			response.setData(null);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			response.setStatus(false);
 			response.setMessage("Failed" + e.getMessage());
 			response.setData(null);
 		}
+
 		return response;
 
 	}

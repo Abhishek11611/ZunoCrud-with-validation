@@ -82,34 +82,11 @@ public class JwtUtil {
             .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 5))
             .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
             .compact();
-        
-        saveTokenToDatabase(userDetails.getUsername(),token);
-        
+            
         return token;
     }
     
-    public void saveTokenToDatabase(String username, String token) {
-    	
-    	boolean existsByUsername = userTokenRepository.existsByUsername(username);
-    	
-    	if(existsByUsername) {
-    		Optional<UserToken> byUsername = userTokenRepository.findByUsername(username);
-    		UserToken userToken = byUsername.get();
-    		userToken.setToken(token);
-    		
-    		userTokenRepository.save(userToken);
-		} else {
 
-			UserToken userToken = new UserToken();
-			userToken.setUsername(username);
-			userToken.setToken(token);
-			userToken.setExpiryDate(new Date(System.currentTimeMillis() + 1000 * 60 * 5));
-
-			userTokenRepository.save(userToken);
-		}
-    	
-    	
-    }
     
 
     public Boolean validateToken(String token, UserDetails userDetails) {
