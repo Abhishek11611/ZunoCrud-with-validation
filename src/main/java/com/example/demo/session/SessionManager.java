@@ -36,6 +36,7 @@ public class SessionManager extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String sessionId = request.getHeader("SessionId");
+        sessionId=AESUtil.decrypt(sessionId);
 
         if (sessionId == null || sessionId.isEmpty()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Please SessionId");

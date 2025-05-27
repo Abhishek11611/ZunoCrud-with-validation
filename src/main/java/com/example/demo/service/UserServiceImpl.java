@@ -24,6 +24,7 @@ import com.example.demo.jwt.JwtUtil;
 import com.example.demo.repository.SessionRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.UserTokenRepository;
+import com.example.demo.session.AESUtil;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -85,8 +86,7 @@ public class UserServiceImpl implements UserService{
 		
 		SessionEntity sessionId = sessionRepository.save(sessionEntity);
 
-    	
-		return sessionId.getSessionId();
+		return AESUtil.encrypt(sessionId.getSessionId());
 		
     }
 
